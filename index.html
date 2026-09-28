@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐾 班级宠物乐园 · 25人孵蛋养宠</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', 'Quicksand', sans-serif;
+            background: linear-gradient(145deg, #fde9d0 0%, #f7d9b8 100%);
+            min-height: 100vh;
+            padding: 24px 16px 40px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .app-header { text-align: center; margin-bottom: 24px; width: 100%; }
+        .app-header h1 {
+            font-size: 2.8rem; letter-spacing: 3px; color: #6b3f1c;
+            text-shadow: 4px 4px 0 #ffdbb5, 6px 6px 0 rgba(180, 120, 70, 0.2);
+            display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        .app-header h1 span { font-size: 3rem; }
+        .subhead {
+            font-size: 1.1rem; color: #856a4b; background: #fff6e9;
+            display: inline-block; padding: 6px 24px; border-radius: 40px; margin-top: 8px;
+            border: 1px solid #e5c9a8; box-shadow: 0 4px 8px rgba(160, 120, 80, 0.1); font-weight: 600;
+        }
+        .subhead .highlight { color: #c45d1a; font-weight: 800; }
+
+        .class-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+            max-width: 1400px; width: 100%; margin: 0 auto;
+        }
+        .student-card {
+            background: #fffbf4; border-radius: 32px 32px 24px 24px;
+            padding: 16px 12px 18px;
+            box-shadow: 0 10px 0 #c9a87c, 0 12px 20px rgba(100, 70, 40, 0.2);
+            border: 2px solid #dbbd99; display: flex; flex-direction: column; align-items: center;
+            transition: all 0.15s ease; position: relative;
+            background-image: radial-gradient(circle at 10px 10px, #fff8ee 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 0 #b48b5a, 0 16px 24px rgba(100, 70, 40, 0.25);
+        }
+        .student-name-row {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; margin-bottom: 6px; font-weight: 700; color: #4e321a;
+            background: #f3e2cf; padding: 4px 8px; border-radius: 40px;
+            border: 1px solid #d6b28b; font-size: 0.9rem;
+        }
+        .student-name-row input {
+            border: none; background: transparent; font-weight: 700; color: #4e321a;
+            font-size: 0.9rem; width: 65px; text-align: center; outline: none;
+            font-family: inherit; border-bottom: 2px dashed #b48b5a;
+        }
+        .student-name-row input:focus { border-bottom: 2px solid #e38b3c; }
+        .student-name-row span:first-child { font-size: 1.1rem; }
+
+        .mini-score {
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            background: #fef0da; border-radius: 60px; padding: 4px 12px;
+            font-weight: 700; font-size: 0.85rem; color: #704f2c;
+            border: 1px solid #d6ad7a; box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.8);
+            margin-bottom: 6px; width: fit-content;
+        }
+        .mini-score span:first-child { font-size: 1rem; }
+        .mini-score .score-value { min-width: 28px; text-align: center; }
+
+        .pet-display {
+            background: #f7ede0; border-radius: 70px 70px 40px 40px; width: 100%;
+            padding: 8px 4px 4px; display: flex; flex-direction: column; align-items: center;
+            border: 2px solid #d9b382; box-shadow: inset 0 3px 12px #e7d0b8;
+            margin-bottom: 6px; min-height: 120px; justify-content: center; position: relative;
+        }
+        .pet-emoji-sm {
+            font-size: 4.2rem; line-height: 1;
+            filter: drop-shadow(3px 5px 4px rgba(0, 0, 0, 0.15));
+            transition: transform 0.2s; margin-bottom: 2px;
+        }
+        .pet-emoji-sm.egg { font-size: 3.4rem; }
+        .pet-name-sm {
+            font-size: 0.85rem; font-weight: 700; color: #5a3a1e;
+            text-shadow: 1px 1px 0 #ffe3c1; margin-top: 2px;
+            white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .pet-choice-row {
+            display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;
+            justify-content: center; min-height: 26px; align-items: center;
+        }
+        .pet-choice-btn {
+            background: #f3e2cf; border: 1px solid #d6b28b; border-radius: 20px;
+            padding: 3px 6px; font-size: 0.75rem; font-weight: 700; color: #4e321a;
+            cursor: pointer; transition: all 0.1s; font-family: inherit;
+            display: flex; align-items: center; gap: 2px;
+        }
+        .pet-choice-btn:hover { background: #ffe3ba; border-color: #e38b3c; }
+        .pet-choice-btn.active {
+            background: #ffdca8; border-color: #c45d1a; box-shadow: 0 0 0 2px #ffb86b;
+        }
+
+        .status-bars-sm {
+            width: 100%; display: flex; flex-direction: column; gap: 5px; margin: 4px 0 6px;
+        }
+        .status-row {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.7rem; font-weight: 700; color: #583e26;
+        }
+        .status-row .icon { font-size: 0.9rem; width: 18px; text-align: center; }
+        .bar-bg-sm {
+            flex: 1; height: 12px; background: #b3926b; border-radius: 20px; overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); border: 1px solid #8b6f4c;
+        }
+        .bar-fill-sm { height: 100%; width: 100%; border-radius: 20px; transition: width 0.3s; }
+        .bar-fill-sm.hunger { background: linear-gradient(90deg, #f9a95a, #ffcb7a); }
+        .bar-fill-sm.thirst { background: linear-gradient(90deg, #4aa3f0, #7ac4ff); }
+        .bar-fill-sm.hunger.low { background: linear-gradient(90deg, #e63946, #f77f7f); }
+        .bar-fill-sm.thirst.low { background: linear-gradient(90deg, #d64545, #f28b8b); }
+
+        .action-row {
+            display: flex; justify-content: center; gap: 5px; width: 100%;
+            margin-top: 4px; flex-wrap: wrap;
+        }
+        .mini-btn {
+            background: #ffe3ba; border: none; border-radius: 40px; padding: 5px 8px;
+            font-size: 0.75rem; font-weight: 700; color: #4b301a;
+            box-shadow: 0 3px 0 #b07d4f; cursor: pointer; transition: all 0.06s linear;
+            border: 1px solid #eebe88; display: flex; align-items: center; gap: 3px;
+            font-family: inherit; flex: 1 0 auto; justify-content: center; min-width: 52px;
+        }
+        .mini-btn:active { transform: translateY(3px); box-shadow: 0 0px 0 #b07d4f; }
+        .mini-btn:disabled {
+            opacity: 0.4; transform: translateY(2px); box-shadow: 0 1px 0 #7a5e3e;
+            pointer-events: none; cursor: not-allowed;
+        }
+        .mini-btn.hatch { background: #f5e1c1; box-shadow: 0 3px 0 #9c7c5a; border-color: #c8a77b; }
+        .mini-btn.feed { background: #ffdca8; box-shadow: 0 3px 0 #b97936; }
+        .mini-btn.water { background: #b8ddff; box-shadow: 0 3px 0 #5982b0; }
+        .mini-btn.chicken { background: #f5c7a9; box-shadow: 0 3px 0 #b87a4a; }
+
+        .mini-message {
+            font-size: 0.68rem; color: #7b4a1e; background: #fcf1e0;
+            border-radius: 30px; padding: 4px 6px; margin-top: 5px; width: 100%;
+            text-align: center; min-height: 22px; border: 1px solid #e0c6a8;
+            font-weight: 600; line-height: 1.2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .global-reset { margin-top: 32px; text-align: center; }
+        .global-reset button {
+            background: #e9d5b5; border: 2px dashed #b48b5a; border-radius: 60px;
+            padding: 14px 40px; font-size: 1.1rem; font-weight: 700; color: #5e3e1f;
+            cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 0 #a5835e;
+            font-family: inherit; letter-spacing: 1px;
+        }
+        .global-reset button:active { transform: translateY(4px); box-shadow: 0 2px 0 #a5835e; }
+        .global-reset button:hover { background: #f3e2cf; }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); } 25% { transform: rotate(6deg); }
+            75% { transform: rotate(-6deg); } 100% { transform: rotate(0deg); }
+        }
+        .shake { animation: shake 0.25s ease-in-out; }
+
+        @media (max-width: 1100px) { .class-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 850px) {
+            .class-grid { grid-template-columns: repeat(3, 1fr); }
+            .app-header h1 { font-size: 2rem; }
+        }
+        @media (max-width: 600px) {
+            .class-grid { grid-template-columns: repeat(2, 1fr); }
+            .mini-btn { font-size: 0.65rem; padding: 4px 5px; min-width: 44px; }
+            .pet-emoji-sm { font-size: 3.2rem; }
+        }
+        @media (max-width: 400px) { .class-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <h1><span>🥚</span> 班级宠物乐园 <span>🐣</span></h1>
+        <div class="subhead">👩‍🏫 25位同学 · 孵化需要 <span class="highlight">20分</span> · 喂食/喝水可以赚分</div>
+    </div>
+
+    <div class="class-grid" id="classGrid"></div>
+
+    <div class="global-reset">
+        <button id="resetAllBtn">🔄 全部领养新蛋 (重置所有学生)</button>
+    </div>
+
+    <script>
+        (function() {
+            // ---------------- 游戏配置 ----------------
+            const STUDENT_COUNT = 25;
+            const INIT_SCORE = 0;
+            const SCORE_HATCH_COST = 20;
+            const DECAY_INTERVAL_MS = 30000;
+            const MAX_SCORE = 999;
+
+            const FEED_OPTIONS = {
+                water:   { score: 1, hunger: 0,  thirst: 15, label: '💧 喝水', icon: '💧' },
+                fruit:   { score: 1, hunger: 12, thirst: 5,  label: '🍎 水果', icon: '🍎' },
+                chicken: { score: 2, hunger: 25, thirst: 0,  label: '🍗 鸡腿', icon: '🍗' },
+            };
+
+            const PET_TYPES = [
+                { id: 'dog',    name: '狗狗', emoji: '🐶' },
+                { id: 'cat',    name: '猫猫', emoji: '🐱' },
+                { id: 'pig',    name: '猪猪', emoji: '🐷' },
+                { id: 'sheep',  name: '羊羊', emoji: '🐑' },
+                { id: 'rabbit', name: '兔兔', emoji: '🐰' },
+            ];
+
+            const DEFAULT_NAMES = [
+                "小智", "小美", "小刚", "小霞", "小遥", "小胜", "小光", "小豪", "小春", "小杰",
+                "小玲", "小峰", "小云", "小海", "小星", "小月", "小阳", "小希", "小望", "小梦",
+                "小宇", "小甜", "小乐", "小安", "小新"
+            ];
+
+            const PET_NAMES = ['小汪','咪咪','团团','糯米','豆豆','糖糖','布丁','小可','奇奇','花花','球球','多多','妞妞','贝贝','皮皮'];
+
+            let students = [];
+            const domRefs = [];
+            let globalDecayInterval = null;
+
+            function initStudents() {
+                students = [];
+                for (let i = 0; i < STUDENT_COUNT; i++) {
+                    students.push({
+                        id: i,
+                        studentName: DEFAULT_NAMES[i] || `同学${i+1}`,
+                        score: INIT_SCORE,
+                        hunger: 100,
+                        thirst: 100,
+                        isEgg: true,
+                        petName: '蛋蛋',
+                        petType: null,
+                        lastMessage: '点击下方按钮赚分，攒够20分即可孵蛋',
+                        petSeed: i,
+                    });
+                }
+            }
+
+            function renderAllCards() {
+                const grid = document.getElementById('classGrid');
+                grid.innerHTML = '';
+                domRefs.length = 0;
+                students.forEach((student, index) => {
+                    grid.appendChild(createStudentCard(student, index));
+                });
+            }
+
+            function createStudentCard(student, index) {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+
+                // 姓名行
+                const nameRow = document.createElement('div');
+                nameRow.className = 'student-name-row';
+                nameRow.innerHTML = `<span>🧑‍🎓</span>`;
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.value = student.studentName;
+                nameInput.maxLength = 8;
+                nameInput.addEventListener('input', (e) => {
+                    students[index].studentName = e.target.value.trim() || '同学';
+                });
+                nameInput.addEventListener('blur', (e) => {
+                    let val = e.target.value.trim();
+                    if (val === '') {
+                        students[index].studentName = DEFAULT_NAMES[index] || `同学${index+1}`;
+                        nameInput.value = students[index].studentName;
+                    } else {
+                        students[index].studentName = val;
+                    }
+                });
+                nameRow.appendChild(nameInput);
+                card.appendChild(nameRow);
+
+                // 分数徽章
+                const scoreDiv = document.createElement('div');
+                scoreDiv.className = 'mini-score';
+                scoreDiv.innerHTML = `<span>⭐</span><span class="score-value" data-role="score">${student.score}</span><span>分</span>`;
+                card.appendChild(scoreDiv);
+
+                // 宠物展示区
+                const petDisplay = document.createElement('div');
+                petDisplay.className = 'pet-display';
+                const petEmoji = document.createElement('div');
+                petEmoji.className = 'pet-emoji-sm egg';
+                petEmoji.textContent = '🥚';
+                const petNameSpan = document.createElement('div');
+                petNameSpan.className = 'pet-name-sm';
+                petNameSpan.textContent = student.petName;
+                petDisplay.appendChild(petEmoji);
+                petDisplay.appendChild(petNameSpan);
+                card.appendChild(petDisplay);
+
+                // 宠物选择行
+                const choiceRow = document.createElement('div');
+                choiceRow.className = 'pet-choice-row';
+                choiceRow.style.display = 'none';
+                card.appendChild(choiceRow);
+
+                // 状态条
+                const statusBars = document.createElement('div');
+                statusBars.className = 'status-bars-sm';
+                const hungerRow = document.createElement('div');
+                hungerRow.className = 'status-row';
+                hungerRow.innerHTML = `<span class="icon">🍖</span><div class="bar-bg-sm"><div class="bar-fill-sm hunger" data-role="hunger-bar" style="width:100%"></div></div>`;
+                const thirstRow = document.createElement('div');
+                thirstRow.className = 'status-row';
+                thirstRow.innerHTML = `<span class="icon">💧</span><div class="bar-bg-sm"><div class="bar-fill-sm thirst" data-role="thirst-bar" style="width:100%"></div></div>`;
+                statusBars.appendChild(hungerRow);
+                statusBars.appendChild(thirstRow);
+                card.appendChild(statusBars);
+
+                // 操作按钮行
+                const actionRow = document.createElement('div');
+                actionRow.className = 'action-row';
+
+                const hatchBtn = document.createElement('button');
+                hatchBtn.className = 'mini-btn hatch';
+                hatchBtn.innerHTML = '🐣 孵蛋(20)';
+                hatchBtn.addEventListener('click', () => handleHatch(index));
+
+                const feedFruitBtn = document.createElement('button');
+                feedFruitBtn.className = 'mini-btn feed';
+                feedFruitBtn.innerHTML = '🍎 +1';
+                feedFruitBtn.addEventListener('click', () => handleFeed(index, 'fruit'));
+
+                const feedChickenBtn = document.createElement('button');
+                feedChickenBtn.className = 'mini-btn chicken';
+                feedChickenBtn.innerHTML = '🍗 +2';
+                feedChickenBtn.addEventListener('click', () => handleFeed(index, 'chicken'));
+
+                const waterBtn = document.createElement('button');
+                waterBtn.className = 'mini-btn water';
+                waterBtn.innerHTML = '💧 +1';
+                waterBtn.addEventListener('click', () => handleWater(index));
+
+                actionRow.appendChild(hatchBtn);
+                actionRow.appendChild(feedFruitBtn);
+                actionRow.appendChild(feedChickenBtn);
+                actionRow.appendChild(waterBtn);
+                card.appendChild(actionRow);
+
+                // 消息框
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'mini-message';
+                msgDiv.textContent = student.lastMessage;
+                card.appendChild(msgDiv);
+
+                domRefs[index] = {
+                    card, scoreSpan: scoreDiv.querySelector('[data-role="score"]'),
+                    petEmoji, petNameSpan, choiceRow,
+                    hungerBar: hungerRow.querySelector('[data-role="hunger-bar"]'),
+                    thirstBar: thirstRow.querySelector('[data-role="thirst-bar"]'),
+                    hatchBtn, feedFruitBtn, feedChickenBtn, waterBtn, msgDiv,
+                };
+
+                updateCardUI(index);
+                return card;
+            }
+
+            function updateCardUI(index) {
+                const student = students[index];
+                const refs = domRefs[index];
+                if (!refs) return;
+
+                if (refs.scoreSpan) refs.scoreSpan.textContent = student.score;
+
+                // 宠物展示
+                if (student.isEgg) {
+                    refs.petEmoji.textContent = '🥚';
+                    refs.petEmoji.classList.add('egg');
+                    refs.petNameSpan.textContent = '蛋蛋';
+                    refs.choiceRow.style.display = 'none';
+                } else {
+                    refs.petEmoji.classList.remove('egg');
+                    if (student.petType) {
+                        const petType = PET_TYPES.find(p => p.id === student.petType);
+                        refs.petEmoji.textContent = petType ? petType.emoji : '🐶';
+                    } else {
+                        refs.petEmoji.textContent = '🐶';
+                    }
+                    refs.petNameSpan.textContent = student.petName;
+                    refs.choiceRow.style.display = 'flex';
+                    renderPetChoices(index);
+                }
+
+                // 状态条
+                const hungerVal = Math.max(0, Math.min(100, student.hunger));
+                const thirstVal = Math.max(0, Math.min(100, student.thirst));
+                refs.hungerBar.style.width = hungerVal + '%';
+                refs.thirstBar.style.width = thirstVal + '%';
+                refs.hungerBar.classList.toggle('low', hungerVal < 30);
+                refs.thirstBar.classList.toggle('low', thirstVal < 30);
+
+                // ⭐ 关键修复：孵化前也可以喂食/喝水赚分！
+                const scoreFull = student.score >= MAX_SCORE;
+                refs.hatchBtn.disabled = !student.isEgg || student.score < SCORE_HATCH_COST;
+                refs.feedFruitBtn.disabled = scoreFull;
+                refs.feedChickenBtn.disabled = scoreFull;
+                refs.waterBtn.disabled = scoreFull;
+            }
+
+            function renderPetChoices(index) {
+                const student = students[index];
+                const refs = domRefs[index];
+                if (!refs || !refs.choiceRow || student.isEgg) return;
+
+                const choiceRow = refs.choiceRow;
+                choiceRow.innerHTML = '';
+
+                PET_TYPES.forEach(petType => {
+                    const btn = document.createElement('button');
+                    btn.className = 'pet-choice-btn' + (student.petType === petType.id ? ' active' : '');
+                    btn.innerHTML = petType.emoji;
+                    btn.title = petType.name;
+                    btn.addEventListener('click', () => {
+                        students[index].petType = petType.id;
+                        if (PET_NAMES.includes(students[index].petName) || students[index].petName === '蛋蛋') {
+                            students[index].petName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
+                        }
+                        updateCardUI(index);
+                        setStudentMessage(index, `🐾 变成了 ${petType.name}！`);
+                    });
+                    choiceRow.appendChild(btn);
+                });
+            }
+
+            function setStudentMessage(index, text) {
+                students[index].lastMessage = text;
+                const refs = domRefs[index];
+                if (refs && refs.msgDiv) refs.msgDiv.textContent = text;
+            }
+
+            function shakePet(index) {
+                const refs = domRefs[index];
+                if (!refs) return;
+                refs.petEmoji.classList.add('shake');
+                setTimeout(() => refs.petEmoji.classList.remove('shake'), 300);
+            }
+
+            function handleHatch(index) {
+                const student = students[index];
+                if (!student.isEgg) return;
+                if (student.score < SCORE_HATCH_COST) {
+                    setStudentMessage(index, `❌ 需要 ${SCORE_HATCH_COST} 分才能孵化`);
+                    return;
+                }
+                student.score -= SCORE_HATCH_COST;
+                student.isEgg = false;
+                student.petName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
+                const randomType = PET_TYPES[Math.floor(Math.random() * PET_TYPES.length)];
+                student.petType = randomType.id;
+                student.hunger = 100;
+                student.thirst = 100;
+                setStudentMessage(index, `🎉 孵出了 ${student.petName}！(-${SCORE_HATCH_COST}分)`);
+                shakePet(index);
+                updateCardUI(index);
+                startGlobalDecay();
+            }
+
+            function handleFeed(index, type) {
+                const student = students[index];
+                if (student.score >= MAX_SCORE) {
+                    setStudentMessage(index, '⭐ 分数已满');
+                    return;
+                }
+                const option = FEED_OPTIONS[type];
+                if (!option) return;
+
+                const oldScore = student.score;
+                student.score = Math.min(MAX_SCORE, student.score + option.score);
+                const gainedScore = student.score - oldScore;
+
+                let hungerGain = 0, thirstGain = 0;
+                if (option.hunger > 0) {
+                    const old = student.hunger;
+                    student.hunger = Math.min(100, student.hunger + option.hunger);
+                    hungerGain = student.hunger - old;
+                }
+                if (option.thirst > 0) {
+                    const old = student.thirst;
+                    student.thirst = Math.min(100, student.thirst + option.thirst);
+                    thirstGain = student.thirst - old;
+                }
+
+                let msg = `${option.icon} +${gainedScore}分`;
+                if (hungerGain > 0) msg += ` 饱食+${hungerGain}`;
+                if (thirstGain > 0) msg += ` 水分+${thirstGain}`;
+                setStudentMessage(index, msg);
+                shakePet(index);
+                updateCardUI(index);
+            }
+
+            function handleWater(index) {
+                const student = students[index];
+                if (student.score >= MAX_SCORE) {
+                    setStudentMessage(index, '⭐ 分数已满');
+                    return;
+                }
+                const option = FEED_OPTIONS.water;
+                const oldScore = student.score;
+                student.score = Math.min(MAX_SCORE, student.score + option.score);
+                const gainedScore = student.score - oldScore;
+
+                const oldThirst = student.thirst;
+                student.thirst = Math.min(100, student.thirst + option.thirst);
+                const thirstGain = student.thirst - oldThirst;
+
+                setStudentMessage(index, `💧 +${gainedScore}分 水分+${thirstGain}`);
+                shakePet(index);
+                updateCardUI(index);
+            }
+
+            function startGlobalDecay() {
+                if (globalDecayInterval) return;
+                globalDecayInterval = setInterval(() => {
+                    for (let i = 0; i < students.length; i++) {
+                        const student = students[i];
+                        if (student.isEgg) continue;
+                        let changed = false;
+                        if (student.hunger > 0) { student.hunger = Math.max(0, student.hunger - 1); changed = true; }
+                        if (student.thirst > 0) { student.thirst = Math.max(0, student.thirst - 1); changed = true; }
+                        if (changed) {
+                            if (student.hunger < 20 || student.thirst < 20) {
+                                setStudentMessage(i, `⚠️ ${student.petName} 需要照顾！`);
+                            } else if (student.hunger < 40 || student.thirst < 40) {
+                                setStudentMessage(i, `👀 ${student.petName} 有点饿了...`);
+                            }
+                            updateCardUI(i);
+                        }
+                    }
+                }, DECAY_INTERVAL_MS);
+            }
+
+            function stopGlobalDecay() {
+                if (globalDecayInterval) { clearInterval(globalDecayInterval); globalDecayInterval = null; }
+            }
+
+            function resetAllStudents() {
+                if (!confirm('确定要重置所有25位学生的宠物吗？')) return;
+                stopGlobalDecay();
+                for (let i = 0; i < students.length; i++) {
+                    const student = students[i];
+                    student.score = INIT_SCORE;
+                    student.hunger = 100;
+                    student.thirst = 100;
+                    student.isEgg = true;
+                    student.petName = '蛋蛋';
+                    student.petType = null;
+                    setStudentMessage(i, '点击下方按钮赚分，攒够20分即可孵蛋');
+                    updateCardUI(i);
+                }
+                startGlobalDecay();
+            }
+
+            function initApp() {
+                initStudents();
+                renderAllCards();
+                document.getElementById('resetAllBtn').addEventListener('click', resetAllStudents);
+                startGlobalDecay();
+            }
+
+            window.addEventListener('DOMContentLoaded', initApp);
+        })();
+    </script>
+</body>
+</html>
