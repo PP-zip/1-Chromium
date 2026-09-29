@@ -71,6 +71,25 @@
         .mini-score span:first-child { font-size: 1rem; }
         .mini-score .score-value { min-width: 28px; text-align: center; }
 
+        /* 🆕 心情状态栏 */
+        .mood-bar {
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            background: #f0f7e6; border-radius: 60px; padding: 3px 12px;
+            font-weight: 700; font-size: 0.75rem; color: #4a6b2c;
+            border: 1px solid #b8d49a; box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.8);
+            margin-bottom: 6px; width: fit-content;
+            transition: all 0.3s;
+        }
+        .mood-bar.sad {
+            background: #ffe0e0; color: #b03a3a; border-color: #e8a0a0;
+        }
+        .mood-bar.okay {
+            background: #fff5d9; color: #8a6a1a; border-color: #e8d09a;
+        }
+        .mood-bar.happy {
+            background: #e6f7e0; color: #3a7a2a; border-color: #a0d88a;
+        }
+
         .pet-display {
             background: #f7ede0; border-radius: 70px 70px 40px 40px; width: 100%;
             padding: 8px 4px 4px; display: flex; flex-direction: column; align-items: center;
@@ -128,10 +147,10 @@
         }
         .mini-btn {
             background: #ffe3ba; border: none; border-radius: 40px; padding: 5px 6px;
-            font-size: 0.7rem; font-weight: 700; color: #4b301a;
+            font-size: 0.65rem; font-weight: 700; color: #4b301a;
             box-shadow: 0 3px 0 #b07d4f; cursor: pointer; transition: all 0.06s linear;
             border: 1px solid #eebe88; display: flex; align-items: center; gap: 2px;
-            font-family: inherit; flex: 1 0 auto; justify-content: center; min-width: 50px;
+            font-family: inherit; flex: 1 0 auto; justify-content: center; min-width: 46px;
         }
         .mini-btn:active { transform: translateY(3px); box-shadow: 0 0px 0 #b07d4f; }
         .mini-btn:disabled {
@@ -142,9 +161,12 @@
         .mini-btn.feed { background: #ffdca8; box-shadow: 0 3px 0 #b97936; }
         .mini-btn.water { background: #b8ddff; box-shadow: 0 3px 0 #5982b0; }
         .mini-btn.chicken { background: #f5c7a9; box-shadow: 0 3px 0 #b87a4a; }
+        /* 🆕 扣分按钮 */
+        .mini-btn.thirsty { background: #c9e4ff; box-shadow: 0 3px 0 #5a8ab0; border-color: #a8c8e8; }
+        .mini-btn.hungry { background: #ffd0d0; box-shadow: 0 3px 0 #b05a5a; border-color: #e8a8a8; }
 
         .mini-message {
-            font-size: 0.68rem; color: #7b4a1e; background: #fcf1e0;
+            font-size: 0.65rem; color: #7b4a1e; background: #fcf1e0;
             border-radius: 30px; padding: 4px 6px; margin-top: 5px; width: 100%;
             text-align: center; min-height: 22px; border: 1px solid #e0c6a8;
             font-weight: 600; line-height: 1.2;
@@ -174,7 +196,7 @@
         }
         @media (max-width: 600px) {
             .class-grid { grid-template-columns: repeat(2, 1fr); }
-            .mini-btn { font-size: 0.6rem; padding: 4px 4px; min-width: 42px; }
+            .mini-btn { font-size: 0.55rem; padding: 4px 3px; min-width: 40px; }
             .pet-emoji-sm { font-size: 3.2rem; }
         }
         @media (max-width: 400px) { .class-grid { grid-template-columns: 1fr; } }
@@ -184,7 +206,7 @@
 
     <div class="app-header">
         <h1><span>🥚</span> Pet Game <span>🐣</span></h1>
-        <div class="subhead">🐾 25 students · Hatch needs <span class="highlight">20 pts</span> · 30 animals to choose!</div>
+        <div class="subhead">🐾 25 students · 30 animals · Auto-save enabled 💾</div>
     </div>
 
     <div class="class-grid" id="classGrid"></div>
@@ -201,6 +223,7 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
+            const STORAGE_KEY = 'petGameData_v1';   // 🆕 localStorage 键名
 
             const FEED_OPTIONS = {
                 water: { score: 1, hunger: 0,  thirst: 15, label: 'Water +1', icon: '💧' },
@@ -208,7 +231,7 @@
                 food:  { score: 2, hunger: 25, thirst: 0,  label: 'Food +2',  icon: '🍗' },
             };
 
-            // 🌟 30 种宠物（超多元化）
+            // 🌟 30 种宠物
             const PET_TYPES = [
                 { id: 'dog',      name: 'Dog',      emoji: '🐶' },
                 { id: 'cat',      name: 'Cat',      emoji: '🐱' },
@@ -254,6 +277,52 @@
             const domRefs = [];
             let globalDecayInterval = null;
 
+            // ---------------- 🆕 保存 & 加载 ----------------
+            function saveData() {
+                try {
+                    const data = students.map(s => ({
+                        studentName: s.studentName,
+                        score: s.score,
+                        hunger: s.hunger,
+                        thirst: s.thirst,
+                        isEgg: s.isEgg,
+                        petName: s.petName,
+                        petType: s.petType,
+                        lastMessage: s.lastMessage,
+                        petSeed: s.petSeed,
+                    }));
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Save failed:', e);
+                }
+            }
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return false;
+                    const data = JSON.parse(raw);
+                    if (!Array.isArray(data) || data.length !== STUDENT_COUNT) return false;
+                    students = data.map((s, i) => ({
+                        id: i,
+                        studentName: s.studentName || DEFAULT_NAMES[i] || `同学${i+1}`,
+                        score: typeof s.score === 'number' ? s.score : INIT_SCORE,
+                        hunger: typeof s.hunger === 'number' ? s.hunger : 100,
+                        thirst: typeof s.thirst === 'number' ? s.thirst : 100,
+                        isEgg: typeof s.isEgg === 'boolean' ? s.isEgg : true,
+                        petName: s.petName || '蛋蛋',
+                        petType: s.petType || null,
+                        lastMessage: s.lastMessage || 'Earn points first, then hatch!',
+                        petSeed: typeof s.petSeed === 'number' ? s.petSeed : i,
+                    }));
+                    return true;
+                } catch (e) {
+                    console.warn('Load failed:', e);
+                    return false;
+                }
+            }
+
+            // ---------------- 初始化学生数据 ----------------
             function initStudents() {
                 students = [];
                 for (let i = 0; i < STUDENT_COUNT; i++) {
@@ -272,6 +341,24 @@
                 }
             }
 
+            // ---------------- 🆕 心情计算 ----------------
+            // 返回 { emoji, label, className }
+            function getMood(student) {
+                if (student.isEgg) {
+                    return { emoji: '🥚', label: 'Egg', className: 'okay' };
+                }
+                const h = student.hunger;
+                const t = student.thirst;
+                // 判断最严重的状态
+                if (h < 15) return { emoji: '😫', label: 'Very Hungry', className: 'sad' };
+                if (t < 15) return { emoji: '😫', label: 'Very Thirsty', className: 'sad' };
+                if (h < 35) return { emoji: '😿', label: 'Hungry', className: 'sad' };
+                if (t < 35) return { emoji: '😿', label: 'Thirsty', className: 'sad' };
+                if (h < 60 || t < 60) return { emoji: '😐', label: 'Okay', className: 'okay' };
+                return { emoji: '😊', label: 'Happy', className: 'happy' };
+            }
+
+            // ---------------- 渲染所有卡片 ----------------
             function renderAllCards() {
                 const grid = document.getElementById('classGrid');
                 grid.innerHTML = '';
@@ -285,6 +372,7 @@
                 const card = document.createElement('div');
                 card.className = 'student-card';
 
+                // 姓名行
                 const nameRow = document.createElement('div');
                 nameRow.className = 'student-name-row';
                 nameRow.innerHTML = `<span>🧑‍🎓</span>`;
@@ -294,6 +382,7 @@
                 nameInput.maxLength = 8;
                 nameInput.addEventListener('input', (e) => {
                     students[index].studentName = e.target.value.trim() || '同学';
+                    saveData();
                 });
                 nameInput.addEventListener('blur', (e) => {
                     let val = e.target.value.trim();
@@ -303,15 +392,24 @@
                     } else {
                         students[index].studentName = val;
                     }
+                    saveData();
                 });
                 nameRow.appendChild(nameInput);
                 card.appendChild(nameRow);
 
+                // 分数徽章
                 const scoreDiv = document.createElement('div');
                 scoreDiv.className = 'mini-score';
                 scoreDiv.innerHTML = `<span>⭐</span><span class="score-value" data-role="score">${student.score}</span><span>pts</span>`;
                 card.appendChild(scoreDiv);
 
+                // 🆕 心情状态栏
+                const moodBar = document.createElement('div');
+                moodBar.className = 'mood-bar';
+                moodBar.innerHTML = `<span>😊</span><span>Happy</span>`;
+                card.appendChild(moodBar);
+
+                // 宠物展示区
                 const petDisplay = document.createElement('div');
                 petDisplay.className = 'pet-display';
                 const petEmoji = document.createElement('div');
@@ -324,11 +422,13 @@
                 petDisplay.appendChild(petNameSpan);
                 card.appendChild(petDisplay);
 
+                // 宠物选择行
                 const choiceRow = document.createElement('div');
                 choiceRow.className = 'pet-choice-row';
                 choiceRow.style.display = 'none';
                 card.appendChild(choiceRow);
 
+                // 状态条
                 const statusBars = document.createElement('div');
                 statusBars.className = 'status-bars-sm';
                 const hungerRow = document.createElement('div');
@@ -341,6 +441,7 @@
                 statusBars.appendChild(thirstRow);
                 card.appendChild(statusBars);
 
+                // 操作按钮行
                 const actionRow = document.createElement('div');
                 actionRow.className = 'action-row';
 
@@ -364,12 +465,26 @@
                 waterBtn.innerHTML = '💧 Water +1';
                 waterBtn.addEventListener('click', () => handleWater(index));
 
+                // 🆕 扣分按钮
+                const thirstyBtn = document.createElement('button');
+                thirstyBtn.className = 'mini-btn thirsty';
+                thirstyBtn.innerHTML = '🥵 Thirsty -1';
+                thirstyBtn.addEventListener('click', () => handleThirsty(index));
+
+                const hungryBtn = document.createElement('button');
+                hungryBtn.className = 'mini-btn hungry';
+                hungryBtn.innerHTML = '😫 Hungry -2';
+                hungryBtn.addEventListener('click', () => handleHungry(index));
+
                 actionRow.appendChild(hatchBtn);
                 actionRow.appendChild(feedFruitBtn);
                 actionRow.appendChild(feedFoodBtn);
                 actionRow.appendChild(waterBtn);
+                actionRow.appendChild(thirstyBtn);
+                actionRow.appendChild(hungryBtn);
                 card.appendChild(actionRow);
 
+                // 消息框
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'mini-message';
                 msgDiv.textContent = student.lastMessage;
@@ -377,10 +492,12 @@
 
                 domRefs[index] = {
                     card, scoreSpan: scoreDiv.querySelector('[data-role="score"]'),
+                    moodBar,
                     petEmoji, petNameSpan, choiceRow,
                     hungerBar: hungerRow.querySelector('[data-role="hunger-bar"]'),
                     thirstBar: thirstRow.querySelector('[data-role="thirst-bar"]'),
-                    hatchBtn, feedFruitBtn, feedFoodBtn, waterBtn, msgDiv,
+                    hatchBtn, feedFruitBtn, feedFoodBtn, waterBtn,
+                    thirstyBtn, hungryBtn, msgDiv,
                 };
 
                 updateCardUI(index);
@@ -394,6 +511,12 @@
 
                 if (refs.scoreSpan) refs.scoreSpan.textContent = student.score;
 
+                // 🆕 心情
+                const mood = getMood(student);
+                refs.moodBar.className = 'mood-bar ' + mood.className;
+                refs.moodBar.innerHTML = `<span>${mood.emoji}</span><span>${mood.label}</span>`;
+
+                // 宠物展示
                 if (student.isEgg) {
                     refs.petEmoji.textContent = '🥚';
                     refs.petEmoji.classList.add('egg');
@@ -412,6 +535,7 @@
                     renderPetChoices(index);
                 }
 
+                // 状态条
                 const hungerVal = Math.max(0, Math.min(100, student.hunger));
                 const thirstVal = Math.max(0, Math.min(100, student.thirst));
                 refs.hungerBar.style.width = hungerVal + '%';
@@ -419,11 +543,15 @@
                 refs.hungerBar.classList.toggle('low', hungerVal < 30);
                 refs.thirstBar.classList.toggle('low', thirstVal < 30);
 
+                // 按钮状态
                 const scoreFull = student.score >= MAX_SCORE;
                 refs.hatchBtn.disabled = !student.isEgg || student.score < SCORE_HATCH_COST;
                 refs.feedFruitBtn.disabled = scoreFull;
                 refs.feedFoodBtn.disabled = scoreFull;
                 refs.waterBtn.disabled = scoreFull;
+                // 🆕 扣分按钮：分数为 0 时不能扣
+                refs.thirstyBtn.disabled = student.score < 1;
+                refs.hungryBtn.disabled = student.score < 2;
             }
 
             function renderPetChoices(index) {
@@ -446,6 +574,7 @@
                         }
                         updateCardUI(index);
                         setStudentMessage(index, `🐾 Now a ${petType.name}!`);
+                        saveData();
                     });
                     choiceRow.appendChild(btn);
                 });
@@ -464,6 +593,7 @@
                 setTimeout(() => refs.petEmoji.classList.remove('shake'), 300);
             }
 
+            // ---------------- 操作处理 ----------------
             function handleHatch(index) {
                 const student = students[index];
                 if (!student.isEgg) return;
@@ -481,6 +611,7 @@
                 setStudentMessage(index, `🎉 Hatched ${student.petName}! (-${SCORE_HATCH_COST} pts)`);
                 shakePet(index);
                 updateCardUI(index);
+                saveData();   // 🆕 自动保存
                 startGlobalDecay();
             }
 
@@ -515,6 +646,7 @@
                 setStudentMessage(index, msg);
                 shakePet(index);
                 updateCardUI(index);
+                saveData();   // 🆕 自动保存
             }
 
             function handleWater(index) {
@@ -535,11 +667,56 @@
                 setStudentMessage(index, `💧 +${gainedScore} pts Water+${thirstGain}`);
                 shakePet(index);
                 updateCardUI(index);
+                saveData();   // 🆕 自动保存
             }
 
+            // 🆕 口渴 -1 分（水分下降）
+            function handleThirsty(index) {
+                const student = students[index];
+                if (student.score < 1) {
+                    setStudentMessage(index, '❌ Not enough points');
+                    return;
+                }
+                if (student.isEgg) {
+                    setStudentMessage(index, '🥚 Hatch first!');
+                    return;
+                }
+                student.score -= 1;
+                const oldThirst = student.thirst;
+                student.thirst = Math.max(0, student.thirst - 15);
+                const lost = oldThirst - student.thirst;
+                setStudentMessage(index, `🥵 -1 pt, Thirst -${lost}`);
+                shakePet(index);
+                updateCardUI(index);
+                saveData();
+            }
+
+            // 🆕 饥饿 -2 分（饱食度下降）
+            function handleHungry(index) {
+                const student = students[index];
+                if (student.score < 2) {
+                    setStudentMessage(index, '❌ Not enough points');
+                    return;
+                }
+                if (student.isEgg) {
+                    setStudentMessage(index, '🥚 Hatch first!');
+                    return;
+                }
+                student.score -= 2;
+                const oldHunger = student.hunger;
+                student.hunger = Math.max(0, student.hunger - 20);
+                const lost = oldHunger - student.hunger;
+                setStudentMessage(index, `😫 -2 pts, Hunger -${lost}`);
+                shakePet(index);
+                updateCardUI(index);
+                saveData();
+            }
+
+            // ---------------- 全局衰减 ----------------
             function startGlobalDecay() {
                 if (globalDecayInterval) return;
                 globalDecayInterval = setInterval(() => {
+                    let anyChanged = false;
                     for (let i = 0; i < students.length; i++) {
                         const student = students[i];
                         if (student.isEgg) continue;
@@ -547,6 +724,7 @@
                         if (student.hunger > 0) { student.hunger = Math.max(0, student.hunger - 1); changed = true; }
                         if (student.thirst > 0) { student.thirst = Math.max(0, student.thirst - 1); changed = true; }
                         if (changed) {
+                            anyChanged = true;
                             if (student.hunger < 20 || student.thirst < 20) {
                                 setStudentMessage(i, `⚠️ ${student.petName} needs care!`);
                             } else if (student.hunger < 40 || student.thirst < 40) {
@@ -555,6 +733,7 @@
                             updateCardUI(i);
                         }
                     }
+                    if (anyChanged) saveData();   // 🆕 衰减后也自动保存
                 }, DECAY_INTERVAL_MS);
             }
 
@@ -562,9 +741,13 @@
                 if (globalDecayInterval) { clearInterval(globalDecayInterval); globalDecayInterval = null; }
             }
 
+            // ---------------- 重置所有学生 ----------------
             function resetAllStudents() {
-                if (!confirm('Reset all 25 students?')) return;
+                if (!confirm('Reset all 25 students? This will clear saved data.')) return;
                 stopGlobalDecay();
+                // 清空 localStorage
+                localStorage.removeItem(STORAGE_KEY);
+                // 重置内存数据
                 for (let i = 0; i < students.length; i++) {
                     const student = students[i];
                     student.score = INIT_SCORE;
@@ -573,14 +756,28 @@
                     student.isEgg = true;
                     student.petName = '蛋蛋';
                     student.petType = null;
+                    student.studentName = DEFAULT_NAMES[i] || `同学${i+1}`;
                     setStudentMessage(i, 'Earn points first, then hatch!');
                     updateCardUI(i);
                 }
+                // 重置姓名输入框
+                domRefs.forEach((refs, i) => {
+                    if (refs && refs.card) {
+                        const input = refs.card.querySelector('.student-name-row input');
+                        if (input) input.value = students[i].studentName;
+                    }
+                });
+                saveData();
                 startGlobalDecay();
             }
 
+            // ---------------- 初始化 ----------------
             function initApp() {
-                initStudents();
+                // 🆕 先尝试从 localStorage 加载
+                const loaded = loadData();
+                if (!loaded) {
+                    initStudents();
+                }
                 renderAllCards();
                 document.getElementById('resetAllBtn').addEventListener('click', resetAllStudents);
                 startGlobalDecay();
