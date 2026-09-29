@@ -16,9 +16,7 @@
             overflow-x: hidden;
         }
 
-        .app-header {
-            text-align: center; margin-bottom: 20px; width: 100%;
-        }
+        .app-header { text-align: center; margin-bottom: 20px; width: 100%; }
         .app-header h1 {
             font-size: 2.6rem; letter-spacing: 3px; color: #6b3f1c;
             text-shadow: 4px 4px 0 #ffdbb5, 6px 6px 0 rgba(180, 120, 70, 0.2);
@@ -32,6 +30,21 @@
             font-weight: 600;
         }
         .subhead .highlight { color: #c45d1a; font-weight: 800; }
+
+        /* 🔊 音效开关 */
+        .sound-toggle {
+            position: fixed; top: 16px; right: 16px;
+            background: #fff6e9; border: 2px solid #d9b382;
+            border-radius: 40px; padding: 8px 16px;
+            font-size: 1rem; font-weight: 700; color: #5a3a1e;
+            cursor: pointer; z-index: 100;
+            box-shadow: 0 4px 0 #b48b5a;
+            font-family: inherit;
+            display: flex; align-items: center; gap: 6px;
+            transition: all 0.1s;
+        }
+        .sound-toggle:active { transform: translateY(3px); box-shadow: 0 1px 0 #b48b5a; }
+        .sound-toggle.muted { background: #e8e8e8; color: #999; }
 
         /* 动物园围栏 */
         .zoo-section {
@@ -150,12 +163,6 @@
             min-height: 130px;
             position: relative;
             transition: background 0.2s;
-        }
-        .pet-slot.empty {
-            background: #f0e6d8;
-            border-style: dashed;
-            border-color: #c8b090;
-            justify-content: center;
         }
         .slot-label {
             position: absolute; top: 4px; left: 8px;
@@ -350,6 +357,12 @@
 </head>
 <body>
 
+    <!-- 🔊 音效开关 -->
+    <button class="sound-toggle" id="soundToggle" title="Toggle sound">
+        <span id="soundIcon">🔊</span>
+        <span id="soundText">Sound ON</span>
+    </button>
+
     <div class="app-header">
         <h1><span>🥚</span> Pet Game · Class Zoo <span>🦁</span></h1>
         <div class="subhead">
@@ -377,14 +390,137 @@
 
     <script>
         (function() {
+            // ============ 🔉 音效引擎 ============
+            // 使用 Web Audio API 生成音效，无需外部文件
+            let audioCtx = null;
+            let soundEnabled = true;
+
+            function getAudioCtx() {
+                if (!audioCtx) {
+                    try {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    } catch (e) { console.warn('Audio not supported'); }
+                }
+                // 某些浏览器需要用户交互才能启动
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return audioCtx;
+            }
+
+            // 播放单个音符
+            function playTone(freq, duration, type = 'sine', volume = 0.15, delay = 0) {
+                if (!soundEnabled) return;
+                const ctx = getAudioCtx();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+
+                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+                gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + duration + 0.05);
+            }
+
+            // 频率滑动（用于扣分）
+            function playSlide(freqStart, freqEnd, duration, type = 'sine', volume = 0.15) {
+                if (!soundEnabled) return;
+                const ctx = getAudioCtx();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freqStart, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(freqEnd, ctx.currentTime + duration);
+
+                gain.gain.setValueAtTime(volume, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + duration + 0.05);
+            }
+
+            // 🎵 定义各种音效
+            const SoundFX = {
+                // 🍎 水果 +1：清脆"叮"
+                fruit() {
+                    playTone(880, 0.12, 'sine', 0.18);
+                    playTone(1320, 0.1, 'sine', 0.1, 0.06);
+                },
+                // 🍗 食物 +2：双音"叮咚"
+                food() {
+                    playTone(660, 0.1, 'triangle', 0.18);
+                    playTone(880, 0.14, 'triangle', 0.18, 0.1);
+                    playTone(1100, 0.16, 'sine', 0.12, 0.2);
+                },
+                // 💧 喝水 +1：流水般"咕噜"
+                water() {
+                    playTone(523, 0.1, 'sine', 0.15);
+                    playTone(659, 0.1, 'sine', 0.15, 0.08);
+                    playTone(784, 0.15, 'sine', 0.12, 0.16);
+                },
+                // 🥵 口渴 -1：下滑音"嘟——"
+                thirsty() {
+                    playSlide(700, 350, 0.28, 'sawtooth', 0.12);
+                },
+                // 😫 饥饿 -2：低沉"咚咚"
+                hungry() {
+                    playTone(180, 0.18, 'sawtooth', 0.16);
+                    playTone(140, 0.22, 'sawtooth', 0.16, 0.14);
+                },
+                // 🐣 孵蛋：上升三连音
+                hatch() {
+                    playTone(523, 0.14, 'sine', 0.18, 0);
+                    playTone(659, 0.14, 'sine', 0.18, 0.12);
+                    playTone(784, 0.22, 'sine', 0.2, 0.24);
+                },
+                // 🎉 成长升级：胜利号角
+                levelUp() {
+                    playTone(659, 0.12, 'triangle', 0.18, 0);
+                    playTone(784, 0.12, 'triangle', 0.18, 0.1);
+                    playTone(1046, 0.14, 'triangle', 0.2, 0.2);
+                    playTone(1318, 0.3, 'sine', 0.18, 0.34);
+                },
+                // ❌ 分数不足：短促低音
+                error() {
+                    playTone(200, 0.15, 'square', 0.1);
+                },
+            };
+
+            // 音效开关
+            function updateSoundToggleUI() {
+                const icon = document.getElementById('soundIcon');
+                const text = document.getElementById('soundText');
+                const btn = document.getElementById('soundToggle');
+                if (soundEnabled) {
+                    icon.textContent = '🔊';
+                    text.textContent = 'Sound ON';
+                    btn.classList.remove('muted');
+                } else {
+                    icon.textContent = '🔇';
+                    text.textContent = 'Sound OFF';
+                    btn.classList.add('muted');
+                }
+            }
+
             // ============ 配置 ============
             const STUDENT_COUNT = 25;
             const SLOTS_PER_STUDENT = 3;
             const INIT_SCORE = 0;
-            const SCORE_HATCH_COST = 20;          // ⭐ 改成 20 分
+            const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v2';   // 版本号升级
+            const STORAGE_KEY = 'petGameZoo_v2';
 
             const STAGE_TEEN_FEED = 5;
             const STAGE_TEEN_SUM = 120;
@@ -442,7 +578,6 @@
             const PET_NAMES = ['小汪','咪咪','团团','糯米','豆豆','糖糖','布丁','小可','奇奇','花花','球球','多多','妞妞','贝贝','皮皮'];
 
             let students = [];
-            const domRefs = [];
             let globalDecayInterval = null;
             let freeMoveInterval = null;
 
@@ -454,14 +589,9 @@
                             studentName: s.studentName,
                             score: s.score,
                             pets: s.pets.map(p => ({
-                                id: p.id,
-                                isEgg: p.isEgg,
-                                petName: p.petName,
-                                petType: p.petType,
-                                hunger: p.hunger,
-                                thirst: p.thirst,
-                                feedCount: p.feedCount,
-                                stage: p.stage,
+                                id: p.id, isEgg: p.isEgg, petName: p.petName,
+                                petType: p.petType, hunger: p.hunger, thirst: p.thirst,
+                                feedCount: p.feedCount, stage: p.stage,
                             })),
                         })),
                     };
@@ -480,10 +610,8 @@
                         studentName: s.studentName || DEFAULT_NAMES[i] || `同学${i+1}`,
                         score: typeof s.score === 'number' ? s.score : INIT_SCORE,
                         pets: (s.pets || []).map(p => ({
-                            id: p.id,
-                            isEgg: typeof p.isEgg === 'boolean' ? p.isEgg : true,
-                            petName: p.petName || '蛋蛋',
-                            petType: p.petType || null,
+                            id: p.id, isEgg: typeof p.isEgg === 'boolean' ? p.isEgg : true,
+                            petName: p.petName || '蛋蛋', petType: p.petType || null,
                             hunger: typeof p.hunger === 'number' ? p.hunger : EGG_INIT_HUNGER,
                             thirst: typeof p.thirst === 'number' ? p.thirst : EGG_INIT_THIRST,
                             feedCount: typeof p.feedCount === 'number' ? p.feedCount : 0,
@@ -491,9 +619,7 @@
                         })),
                     }));
                     students.forEach(s => {
-                        while (s.pets.length < SLOTS_PER_STUDENT) {
-                            s.pets.push(createNewEgg());
-                        }
+                        while (s.pets.length < SLOTS_PER_STUDENT) s.pets.push(createNewEgg());
                         s.pets = s.pets.slice(0, SLOTS_PER_STUDENT);
                     });
                     return true;
@@ -503,13 +629,9 @@
             function createNewEgg() {
                 return {
                     id: 'pet_' + Math.random().toString(36).substr(2, 9),
-                    isEgg: true,
-                    petName: '蛋蛋',
-                    petType: null,
-                    hunger: EGG_INIT_HUNGER,
-                    thirst: EGG_INIT_THIRST,
-                    feedCount: 0,
-                    stage: 'baby',
+                    isEgg: true, petName: '蛋蛋', petType: null,
+                    hunger: EGG_INIT_HUNGER, thirst: EGG_INIT_THIRST,
+                    feedCount: 0, stage: 'baby',
                 };
             }
 
@@ -551,8 +673,10 @@
                 return '👶 Baby';
             }
 
+            // 🎵 返回旧阶段，方便比较是否升级
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
+                const oldStage = pet.stage;
                 const sum = pet.hunger + pet.thirst;
                 let newStage = 'baby';
                 if (pet.feedCount >= STAGE_ADULT_FEED && sum >= STAGE_ADULT_SUM) {
@@ -560,15 +684,17 @@
                 } else if (pet.feedCount >= STAGE_TEEN_FEED && sum >= STAGE_TEEN_SUM) {
                     newStage = 'teen';
                 }
-                if (newStage !== pet.stage) pet.stage = newStage;
+                if (newStage !== oldStage) {
+                    pet.stage = newStage;
+                    // 🎉 升级音效！
+                    if (newStage !== 'baby') {
+                        SoundFX.levelUp();
+                    }
+                }
             }
 
             // ============ 渲染 ============
-            function renderAll() {
-                renderZoo();
-                renderCards();
-                renderFreeRange();
-            }
+            function renderAll() { renderZoo(); renderCards(); renderFreeRange(); }
 
             function renderZoo() {
                 const fence = document.getElementById('zooFence');
@@ -578,10 +704,8 @@
                     s.pets.forEach(p => {
                         if (!p.isEgg && p.stage === 'teen' && p.petType) {
                             teens.push({
-                                petId: p.id,
-                                ownerName: s.studentName,
-                                petName: p.petName,
-                                emoji: getStageEmoji(p),
+                                petId: p.id, ownerName: s.studentName,
+                                petName: p.petName, emoji: getStageEmoji(p),
                             });
                         }
                     });
@@ -605,7 +729,6 @@
             function renderCards() {
                 const grid = document.getElementById('classGrid');
                 grid.innerHTML = '';
-                domRefs.length = 0;
                 students.forEach((student, index) => {
                     grid.appendChild(createStudentCard(student, index));
                 });
@@ -628,8 +751,7 @@
                 nameInput.addEventListener('input', (e) => {
                     students[index].studentName = e.target.value.trim() || '同学';
                     saveData();
-                    renderZoo();
-                    renderFreeRange();
+                    renderZoo(); renderFreeRange();
                 });
                 nameInput.addEventListener('blur', (e) => {
                     let val = e.target.value.trim();
@@ -640,8 +762,7 @@
                         students[index].studentName = val;
                     }
                     saveData();
-                    renderZoo();
-                    renderFreeRange();
+                    renderZoo(); renderFreeRange();
                 });
                 nameRow.appendChild(nameInput);
                 top.appendChild(nameRow);
@@ -650,16 +771,13 @@
                 scoreDiv.className = 'mini-score';
                 scoreDiv.innerHTML = `<span>⭐</span><span class="score-value" data-role="score">${student.score}</span>`;
                 top.appendChild(scoreDiv);
-
                 card.appendChild(top);
 
                 const slots = document.createElement('div');
                 slots.className = 'pet-slots';
-
                 student.pets.forEach((pet, slotIdx) => {
                     slots.appendChild(createPetSlot(student, index, pet, slotIdx));
                 });
-
                 card.appendChild(slots);
                 return card;
             }
@@ -682,9 +800,7 @@
                 petNameSpan.className = 'pet-name-sm';
                 petNameSpan.textContent = pet.petName;
                 petNameSpan.title = '点击修改宠物名字';
-                petNameSpan.addEventListener('click', () => {
-                    startEditPetName(studentIdx, slotIdx, petNameSpan);
-                });
+                petNameSpan.addEventListener('click', () => startEditPetName(studentIdx, slotIdx, petNameSpan));
                 slot.appendChild(petNameSpan);
 
                 if (!pet.isEgg) {
@@ -734,7 +850,6 @@
                 const actions = document.createElement('div');
                 actions.className = 'slot-actions';
 
-                // 孵蛋按钮 - 显示 20 分提示
                 const hatchBtn = document.createElement('button');
                 hatchBtn.className = 'mini-btn hatch';
                 hatchBtn.innerHTML = '🐣20';
@@ -798,20 +913,16 @@
                 petNameSpan.appendChild(input);
                 input.focus();
                 input.select();
-
                 const finish = () => {
                     let val = input.value.trim();
                     if (val === '') val = pet.isEgg ? '蛋蛋' : (PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)]);
                     pet.petName = val;
                     petNameSpan.textContent = val;
                     saveData();
-                    renderZoo();
-                    renderFreeRange();
+                    renderZoo(); renderFreeRange();
                 };
                 input.addEventListener('blur', finish);
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') input.blur();
-                });
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
             }
 
             function renderFreeRange() {
@@ -822,10 +933,8 @@
                     s.pets.forEach(p => {
                         if (!p.isEgg && p.stage === 'adult' && p.petType) {
                             adults.push({
-                                petId: p.id,
-                                ownerName: s.studentName,
-                                petName: p.petName,
-                                emoji: getStageEmoji(p),
+                                petId: p.id, ownerName: s.studentName,
+                                petName: p.petName, emoji: getStageEmoji(p),
                             });
                         }
                     });
@@ -866,8 +975,10 @@
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
                 if (!pet.isEgg) return;
-                if (student.score < SCORE_HATCH_COST) return;
-
+                if (student.score < SCORE_HATCH_COST) {
+                    SoundFX.error();
+                    return;
+                }
                 student.score -= SCORE_HATCH_COST;
                 pet.isEgg = false;
                 if (pet.petName === '蛋蛋') {
@@ -878,6 +989,7 @@
                 pet.feedCount = 0;
                 pet.stage = 'baby';
                 pet.petType = null;
+                SoundFX.hatch();  // 🐣 孵蛋音效
                 saveData();
                 renderAll();
                 startGlobalDecay();
@@ -891,12 +1003,18 @@
                 if (!opt) return;
                 const oldScore = student.score;
                 student.score = Math.min(MAX_SCORE, student.score + opt.score);
+
                 if (opt.hunger > 0) pet.hunger = Math.min(100, pet.hunger + opt.hunger);
                 if (opt.thirst > 0) pet.thirst = Math.min(100, pet.thirst + opt.thirst);
                 if (!pet.isEgg) {
                     pet.feedCount += 1;
                     updateStage(pet);
                 }
+
+                // 🎵 播放对应音效
+                if (type === 'fruit') SoundFX.fruit();
+                else if (type === 'food') SoundFX.food();
+
                 saveData();
                 renderAll();
             }
@@ -913,6 +1031,7 @@
                     pet.feedCount += 1;
                     updateStage(pet);
                 }
+                SoundFX.water();  // 💧 喝水音效
                 saveData();
                 renderAll();
             }
@@ -920,10 +1039,14 @@
             function handleThirsty(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 1) return;
+                if (pet.isEgg || student.score < 1) {
+                    SoundFX.error();
+                    return;
+                }
                 student.score -= 1;
                 pet.thirst = Math.max(0, pet.thirst - 15);
                 updateStage(pet);
+                SoundFX.thirsty();  // 🥵 口渴音效
                 saveData();
                 renderAll();
             }
@@ -931,10 +1054,14 @@
             function handleHungry(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 2) return;
+                if (pet.isEgg || student.score < 2) {
+                    SoundFX.error();
+                    return;
+                }
                 student.score -= 2;
                 pet.hunger = Math.max(0, pet.hunger - 20);
                 updateStage(pet);
+                SoundFX.hungry();  // 😫 饥饿音效
                 saveData();
                 renderAll();
             }
@@ -976,11 +1103,26 @@
                 return str.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             }
 
+            // ============ 音效开关事件 ============
+            document.getElementById('soundToggle').addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                updateSoundToggleUI();
+                // 播放一个确认音（如果是打开）
+                if (soundEnabled) SoundFX.fruit();
+            });
+
+            // 首次用户交互时初始化音频上下文
+            document.body.addEventListener('click', () => {
+                getAudioCtx();
+            }, { once: true });
+
+            // ============ 启动 ============
             function initApp() {
                 const loaded = loadData();
                 if (!loaded) initStudents();
                 renderAll();
                 document.getElementById('resetAllBtn').addEventListener('click', resetAll);
+                updateSoundToggleUI();
                 startGlobalDecay();
                 window.addEventListener('resize', () => renderFreeRange());
             }
