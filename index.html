@@ -31,7 +31,7 @@
         }
         .subhead .highlight { color: #c45d1a; font-weight: 800; }
 
-        /* 🔊 音效开关 */
+        /* 音效开关 */
         .sound-toggle {
             position: fixed; top: 16px; right: 16px;
             background: #fff6e9; border: 2px solid #d9b382;
@@ -83,11 +83,8 @@
             border: 2px solid #8aae6a;
             box-shadow: 0 4px 0 rgba(90, 130, 60, 0.3);
             animation: zooBob 2s ease-in-out infinite;
-            transition: transform 0.3s;
-            position: relative;
         }
         .zoo-pet:nth-child(odd) { animation-delay: 0.5s; }
-        .zoo-pet:nth-child(3n) { animation-delay: 1s; }
         @keyframes zooBob {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
@@ -105,6 +102,7 @@
             margin-top: 2px; white-space: nowrap;
         }
 
+        /* 学生网格 */
         .class-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
             max-width: 1400px; width: 100%; margin: 0 auto;
@@ -150,56 +148,65 @@
             white-space: nowrap;
         }
 
-        .pet-slots {
-            display: flex; flex-direction: column; gap: 8px;
-            width: 100%;
+        /* 宠物槽位切换器 */
+        .slot-switcher {
+            display: flex; gap: 4px; margin-bottom: 6px;
+            background: #f0e6d8; padding: 3px;
+            border-radius: 40px; border: 1px solid #d6b28b;
         }
-        .pet-slot {
-            background: #f7ede0;
-            border-radius: 20px;
-            padding: 6px 6px 8px;
-            border: 2px solid #d9b382;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 130px;
-            position: relative;
-            transition: background 0.2s;
+        .slot-switch-btn {
+            background: transparent; border: none;
+            border-radius: 40px; padding: 3px 10px;
+            font-size: 0.75rem; font-weight: 800; color: #a08868;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+            display: flex; align-items: center; gap: 3px;
         }
-        .slot-label {
-            position: absolute; top: 4px; left: 8px;
-            font-size: 0.6rem; font-weight: 800; color: #a08868;
-            letter-spacing: 0.5px;
+        .slot-switch-btn.active {
+            background: #ffdca8;
+            color: #4b301a;
+            box-shadow: 0 2px 0 #b97936;
+        }
+        .slot-switch-btn:hover:not(.active) {
+            background: #e8dcc8;
+        }
+        .slot-switch-btn .stage-dot {
+            font-size: 0.6rem;
         }
 
+        /* 主界面显示的单宠物区 */
+        .single-pet-display {
+            background: #f7ede0;
+            border-radius: 24px;
+            padding: 10px 10px 12px;
+            border: 2px solid #d9b382;
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%;
+            min-height: 150px;
+            position: relative;
+        }
         .pet-emoji-sm {
-            font-size: 2.6rem; line-height: 1;
+            font-size: 3rem; line-height: 1;
             filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.15));
             transition: transform 0.2s;
             margin-top: 4px;
         }
-        .pet-emoji-sm.egg { font-size: 2.4rem; }
-        .pet-emoji-sm.stage-baby { font-size: 2.2rem; }
-        .pet-emoji-sm.stage-teen { font-size: 2.6rem; }
-        .pet-emoji-sm.stage-adult { font-size: 3rem; }
+        .pet-emoji-sm.egg { font-size: 2.6rem; }
+        .pet-emoji-sm.stage-baby { font-size: 2.4rem; }
+        .pet-emoji-sm.stage-teen { font-size: 2.8rem; }
+        .pet-emoji-sm.stage-adult { font-size: 3.2rem; }
 
         .pet-name-sm {
-            font-size: 0.7rem; font-weight: 700; color: #5a3a1e;
-            text-shadow: 1px 1px 0 #ffe3c1; margin-top: 2px;
+            font-size: 0.8rem; font-weight: 700; color: #5a3a1e;
+            text-shadow: 1px 1px 0 #ffe3c1; margin-top: 4px;
             white-space: nowrap; max-width: 100%;
             overflow: hidden; text-overflow: ellipsis;
-            cursor: pointer; padding: 1px 6px; border-radius: 12px;
-            transition: background 0.2s;
-        }
-        .pet-name-sm:hover { background: #ffe3ba; }
-        .pet-name-sm input {
-            border: none; background: transparent; font-weight: 700; color: #5a3a1e;
-            font-size: 0.7rem; width: 70px; text-align: center; outline: none;
-            font-family: inherit; border-bottom: 1px dashed #b48b5a;
         }
 
         .stage-badge {
-            font-size: 0.55rem; font-weight: 800;
-            padding: 1px 6px; border-radius: 10px;
-            margin-top: 2px;
+            font-size: 0.6rem; font-weight: 800;
+            padding: 2px 8px; border-radius: 10px;
+            margin-top: 3px;
             letter-spacing: 0.3px;
         }
         .stage-badge.baby { background: #ffe0b8; color: #b06a1a; }
@@ -207,24 +214,24 @@
         .stage-badge.adult { background: #ffd0e0; color: #b02a5a; }
 
         .mood-mini {
-            font-size: 0.6rem; font-weight: 700;
-            padding: 1px 6px; border-radius: 10px;
-            margin-top: 1px;
+            font-size: 0.65rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 10px;
+            margin-top: 3px;
         }
         .mood-mini.happy { background: #e6f7e0; color: #3a7a2a; }
         .mood-mini.okay { background: #fff5d9; color: #8a6a1a; }
         .mood-mini.sad { background: #ffe0e0; color: #b03a3a; }
 
         .status-mini {
-            width: 100%; display: flex; flex-direction: column; gap: 3px;
-            margin: 4px 0 4px;
+            width: 100%; display: flex; flex-direction: column; gap: 4px;
+            margin: 6px 0 4px;
         }
         .status-mini-row {
-            display: flex; align-items: center; gap: 4px;
-            font-size: 0.6rem; font-weight: 700; color: #583e26;
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.65rem; font-weight: 700; color: #583e26;
         }
         .bar-bg-xs {
-            flex: 1; height: 8px; background: #b3926b; border-radius: 10px;
+            flex: 1; height: 9px; background: #b3926b; border-radius: 10px;
             overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         .bar-fill-xs {
@@ -236,19 +243,20 @@
         .bar-fill-xs.hunger.low { background: linear-gradient(90deg, #e63946, #f77f7f); }
         .bar-fill-xs.thirst.low { background: linear-gradient(90deg, #d64545, #f28b8b); }
 
+        /* 主界面操作按钮 */
         .slot-actions {
             display: flex; flex-wrap: wrap; gap: 3px; width: 100%;
-            justify-content: center; margin-top: 3px;
+            justify-content: center; margin-top: 4px;
         }
         .mini-btn {
             background: #ffe3ba; border: none; border-radius: 30px;
-            padding: 3px 5px; font-size: 0.55rem; font-weight: 700;
+            padding: 4px 6px; font-size: 0.6rem; font-weight: 700;
             color: #4b301a; box-shadow: 0 2px 0 #b07d4f;
             cursor: pointer; transition: all 0.06s linear;
             border: 1px solid #eebe88;
             display: flex; align-items: center; gap: 1px;
             font-family: inherit; flex: 1 0 auto;
-            justify-content: center; min-width: 36px;
+            justify-content: center; min-width: 38px;
         }
         .mini-btn:active { transform: translateY(2px); box-shadow: 0 0 0 #b07d4f; }
         .mini-btn:disabled {
@@ -262,19 +270,170 @@
         .mini-btn.thirsty { background: #c9e4ff; box-shadow: 0 2px 0 #5a8ab0; }
         .mini-btn.hungry { background: #ffd0d0; box-shadow: 0 2px 0 #b05a5a; }
 
+        /* 打开个人页面按钮 */
+        .open-profile-btn {
+            margin-top: 8px;
+            width: 100%;
+            background: #d4b896;
+            border: 1px solid #a5835e;
+            border-radius: 40px;
+            padding: 6px 10px;
+            font-size: 0.7rem; font-weight: 800; color: #4b301a;
+            cursor: pointer; transition: all 0.1s;
+            font-family: inherit;
+            box-shadow: 0 3px 0 #9c7c5a;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+        }
+        .open-profile-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #9c7c5a; }
+        .open-profile-btn:hover { background: #e0c4a2; }
+
+        /* ============ 个人页面（弹窗） ============ */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(60, 40, 20, 0.6);
+            z-index: 200;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.open { display: flex; }
+
+        .profile-modal {
+            background: #fffbf4;
+            border-radius: 40px;
+            padding: 24px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 4px solid #d9b382;
+            position: relative;
+            animation: modalIn 0.3s ease-out;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute; top: 14px; right: 18px;
+            background: #ffd0d0;
+            border: 2px solid #b05a5a;
+            border-radius: 50%;
+            width: 38px; height: 38px;
+            font-size: 1.2rem; font-weight: 800;
+            color: #7a2020;
+            cursor: pointer; transition: all 0.15s;
+            font-family: inherit;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 3px 0 #8a3030;
+        }
+        .modal-close:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a3030; }
+
+        .profile-header {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px dashed #d9b382;
+        }
+        .profile-avatar {
+            font-size: 3rem;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-owner-name {
+            font-size: 1.4rem; font-weight: 800; color: #4e321a;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .profile-owner-name input {
+            border: none; background: #f3e2cf;
+            font-size: 1.3rem; font-weight: 800; color: #4e321a;
+            padding: 4px 12px; border-radius: 20px;
+            border: 1px solid #d6b28b; outline: none;
+            font-family: inherit;
+            width: 180px;
+        }
+        .profile-score {
+            font-size: 1rem; font-weight: 700; color: #704f2c;
+            background: #fef0da; display: inline-block;
+            padding: 4px 14px; border-radius: 30px;
+            margin-top: 6px; border: 1px solid #d6ad7a;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        @media (max-width: 800px) {
+            .slots-grid { grid-template-columns: 1fr; }
+        }
+
+        .full-pet-slot {
+            background: #f7ede0;
+            border-radius: 24px;
+            padding: 12px 12px 14px;
+            border: 2px solid #d9b382;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 280px;
+            position: relative;
+        }
+        .slot-label {
+            position: absolute; top: 8px; left: 12px;
+            font-size: 0.7rem; font-weight: 800; color: #a08868;
+            letter-spacing: 0.5px;
+        }
+        .full-pet-slot .pet-emoji-sm {
+            font-size: 4rem;
+            margin-top: 20px;
+        }
+        .full-pet-slot .pet-name-sm {
+            font-size: 1rem;
+            margin-top: 8px;
+            cursor: pointer;
+            padding: 2px 10px; border-radius: 20px;
+            transition: background 0.2s;
+        }
+        .full-pet-slot .pet-name-sm:hover { background: #ffe3ba; }
+        .full-pet-slot .pet-name-sm input {
+            border: none; background: transparent; font-weight: 700; color: #5a3a1e;
+            font-size: 1rem; width: 100px; text-align: center; outline: none;
+            font-family: inherit; border-bottom: 2px dashed #b48b5a;
+        }
+
+        .full-pet-slot .status-mini {
+            margin: 10px 0 6px;
+        }
+        .full-pet-slot .bar-bg-xs { height: 12px; }
+        .full-pet-slot .status-mini-row { font-size: 0.75rem; }
+
+        .full-slot-actions {
+            display: flex; flex-wrap: wrap; gap: 5px;
+            width: 100%; justify-content: center; margin-top: 8px;
+        }
+        .full-slot-actions .mini-btn {
+            font-size: 0.7rem; padding: 5px 8px; min-width: 48px;
+        }
+
         .pet-choice-row {
-            display: flex; gap: 2px; margin-top: 3px; flex-wrap: wrap;
-            justify-content: center; max-height: 52px; overflow-y: auto;
+            display: flex; gap: 3px; margin-top: 8px; flex-wrap: wrap;
+            justify-content: center; max-height: 70px; overflow-y: auto;
+            padding: 4px; background: #f0e6d8; border-radius: 14px;
+            width: 100%;
         }
         .pet-choice-btn {
-            background: #f3e2cf; border: 1px solid #d6b28b;
-            border-radius: 12px; padding: 1px 3px; font-size: 0.7rem;
+            background: #fff;
+            border: 1px solid #d6b28b;
+            border-radius: 12px;
+            padding: 3px 5px; font-size: 0.9rem;
             cursor: pointer; transition: all 0.1s; font-family: inherit;
         }
         .pet-choice-btn:hover { background: #ffe3ba; }
         .pet-choice-btn.active {
             background: #ffdca8; border-color: #c45d1a;
-            box-shadow: 0 0 0 1px #ffb86b;
+            box-shadow: 0 0 0 2px #ffb86b;
         }
 
         .free-range {
@@ -297,8 +456,7 @@
             position: absolute;
             display: flex; flex-direction: column; align-items: center;
             transition: left 4s linear, top 4s linear;
-            pointer-events: auto;
-            cursor: pointer;
+            pointer-events: auto; cursor: pointer;
         }
         .free-pet-emoji {
             font-size: 3.2rem;
@@ -314,8 +472,7 @@
             background: #fff8ee; padding: 1px 8px;
             border-radius: 20px; color: #5a3a1e;
             border: 1px solid #d9b382;
-            white-space: nowrap;
-            margin-top: 2px;
+            white-space: nowrap; margin-top: 2px;
         }
 
         .global-reset {
@@ -357,7 +514,7 @@
 </head>
 <body>
 
-    <!-- 🔊 音效开关 -->
+    <!-- 音效开关 -->
     <button class="sound-toggle" id="soundToggle" title="Toggle sound">
         <span id="soundIcon">🔊</span>
         <span id="soundText">Sound ON</span>
@@ -367,7 +524,8 @@
         <h1><span>🥚</span> Pet Game · Class Zoo <span>🦁</span></h1>
         <div class="subhead">
             🐾 25 students · 30 animals · 
-            <span class="highlight">Hatch needs 20 pts</span> · Baby → Teen → Adult
+            <span class="highlight">Hatch needs 20 pts</span> · 
+            Click <b>📂 Profile</b> to manage 3 pets
         </div>
     </div>
 
@@ -388,10 +546,16 @@
 
     <div class="free-range" id="freeRange"></div>
 
+    <!-- ============ 个人页面弹窗 ============ -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="profile-modal" id="profileModalContent">
+            <!-- 内容由 JS 填充 -->
+        </div>
+    </div>
+
     <script>
         (function() {
             // ============ 🔉 音效引擎 ============
-            // 使用 Web Audio API 生成音效，无需外部文件
             let audioCtx = null;
             let soundEnabled = true;
 
@@ -401,114 +565,63 @@
                         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     } catch (e) { console.warn('Audio not supported'); }
                 }
-                // 某些浏览器需要用户交互才能启动
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
                 return audioCtx;
             }
 
-            // 播放单个音符
             function playTone(freq, duration, type = 'sine', volume = 0.15, delay = 0) {
                 if (!soundEnabled) return;
                 const ctx = getAudioCtx();
                 if (!ctx) return;
-
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-
                 gain.gain.setValueAtTime(0, ctx.currentTime + delay);
                 gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(ctx.currentTime + delay);
                 osc.stop(ctx.currentTime + delay + duration + 0.05);
             }
 
-            // 频率滑动（用于扣分）
-            function playSlide(freqStart, freqEnd, duration, type = 'sine', volume = 0.15) {
+            function playSlide(f1, f2, dur, type = 'sine', vol = 0.15) {
                 if (!soundEnabled) return;
                 const ctx = getAudioCtx();
                 if (!ctx) return;
-
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = type;
-                osc.frequency.setValueAtTime(freqStart, ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(freqEnd, ctx.currentTime + duration);
-
-                gain.gain.setValueAtTime(volume, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+                osc.frequency.setValueAtTime(f1, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(f2, ctx.currentTime + dur);
+                gain.gain.setValueAtTime(vol, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+                osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + duration + 0.05);
+                osc.stop(ctx.currentTime + dur + 0.05);
             }
 
-            // 🎵 定义各种音效
             const SoundFX = {
-                // 🍎 水果 +1：清脆"叮"
-                fruit() {
-                    playTone(880, 0.12, 'sine', 0.18);
-                    playTone(1320, 0.1, 'sine', 0.1, 0.06);
-                },
-                // 🍗 食物 +2：双音"叮咚"
-                food() {
-                    playTone(660, 0.1, 'triangle', 0.18);
-                    playTone(880, 0.14, 'triangle', 0.18, 0.1);
-                    playTone(1100, 0.16, 'sine', 0.12, 0.2);
-                },
-                // 💧 喝水 +1：流水般"咕噜"
-                water() {
-                    playTone(523, 0.1, 'sine', 0.15);
-                    playTone(659, 0.1, 'sine', 0.15, 0.08);
-                    playTone(784, 0.15, 'sine', 0.12, 0.16);
-                },
-                // 🥵 口渴 -1：下滑音"嘟——"
-                thirsty() {
-                    playSlide(700, 350, 0.28, 'sawtooth', 0.12);
-                },
-                // 😫 饥饿 -2：低沉"咚咚"
-                hungry() {
-                    playTone(180, 0.18, 'sawtooth', 0.16);
-                    playTone(140, 0.22, 'sawtooth', 0.16, 0.14);
-                },
-                // 🐣 孵蛋：上升三连音
-                hatch() {
-                    playTone(523, 0.14, 'sine', 0.18, 0);
-                    playTone(659, 0.14, 'sine', 0.18, 0.12);
-                    playTone(784, 0.22, 'sine', 0.2, 0.24);
-                },
-                // 🎉 成长升级：胜利号角
-                levelUp() {
-                    playTone(659, 0.12, 'triangle', 0.18, 0);
-                    playTone(784, 0.12, 'triangle', 0.18, 0.1);
-                    playTone(1046, 0.14, 'triangle', 0.2, 0.2);
-                    playTone(1318, 0.3, 'sine', 0.18, 0.34);
-                },
-                // ❌ 分数不足：短促低音
-                error() {
-                    playTone(200, 0.15, 'square', 0.1);
-                },
+                fruit() { playTone(880, 0.12, 'sine', 0.18); playTone(1320, 0.1, 'sine', 0.1, 0.06); },
+                food() { playTone(660, 0.1, 'triangle', 0.18); playTone(880, 0.14, 'triangle', 0.18, 0.1); playTone(1100, 0.16, 'sine', 0.12, 0.2); },
+                water() { playTone(523, 0.1, 'sine', 0.15); playTone(659, 0.1, 'sine', 0.15, 0.08); playTone(784, 0.15, 'sine', 0.12, 0.16); },
+                thirsty() { playSlide(700, 350, 0.28, 'sawtooth', 0.12); },
+                hungry() { playTone(180, 0.18, 'sawtooth', 0.16); playTone(140, 0.22, 'sawtooth', 0.16, 0.14); },
+                hatch() { playTone(523, 0.14, 'sine', 0.18, 0); playTone(659, 0.14, 'sine', 0.18, 0.12); playTone(784, 0.22, 'sine', 0.2, 0.24); },
+                levelUp() { playTone(659, 0.12, 'triangle', 0.18, 0); playTone(784, 0.12, 'triangle', 0.18, 0.1); playTone(1046, 0.14, 'triangle', 0.2, 0.2); playTone(1318, 0.3, 'sine', 0.18, 0.34); },
+                error() { playTone(200, 0.15, 'square', 0.1); },
             };
 
-            // 音效开关
             function updateSoundToggleUI() {
                 const icon = document.getElementById('soundIcon');
                 const text = document.getElementById('soundText');
                 const btn = document.getElementById('soundToggle');
                 if (soundEnabled) {
-                    icon.textContent = '🔊';
-                    text.textContent = 'Sound ON';
+                    icon.textContent = '🔊'; text.textContent = 'Sound ON';
                     btn.classList.remove('muted');
                 } else {
-                    icon.textContent = '🔇';
-                    text.textContent = 'Sound OFF';
+                    icon.textContent = '🔇'; text.textContent = 'Sound OFF';
                     btn.classList.add('muted');
                 }
             }
@@ -520,7 +633,7 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v2';
+            const STORAGE_KEY = 'petGameZoo_v3';
 
             const STAGE_TEEN_FEED = 5;
             const STAGE_TEEN_SUM = 120;
@@ -537,36 +650,36 @@
             };
 
             const PET_TYPES = [
-                { id: 'dog',      name: 'Dog',      emoji: '🐶' },
-                { id: 'cat',      name: 'Cat',      emoji: '🐱' },
-                { id: 'pig',      name: 'Pig',      emoji: '🐷' },
-                { id: 'sheep',    name: 'Sheep',    emoji: '🐑' },
-                { id: 'rabbit',   name: 'Rabbit',   emoji: '🐰' },
-                { id: 'dolphin',  name: 'Dolphin',  emoji: '🐬' },
-                { id: 'dino',     name: 'Dino',     emoji: '🦖' },
-                { id: 'turtle',   name: 'Turtle',   emoji: '🐢' },
-                { id: 'penguin',  name: 'Penguin',  emoji: '🐧' },
-                { id: 'monkey',   name: 'Monkey',   emoji: '🐵' },
-                { id: 'panda',    name: 'Panda',    emoji: '🐼' },
-                { id: 'frog',     name: 'Frog',     emoji: '🐸' },
-                { id: 'lion',     name: 'Lion',     emoji: '🦁' },
-                { id: 'tiger',    name: 'Tiger',    emoji: '🐯' },
-                { id: 'bear',     name: 'Bear',     emoji: '🐻' },
-                { id: 'koala',    name: 'Koala',    emoji: '🐨' },
-                { id: 'fox',      name: 'Fox',      emoji: '🦊' },
-                { id: 'wolf',     name: 'Wolf',     emoji: '🐺' },
-                { id: 'cow',      name: 'Cow',      emoji: '🐮' },
-                { id: 'horse',    name: 'Horse',    emoji: '🐴' },
-                { id: 'unicorn',  name: 'Unicorn',  emoji: '🦄' },
-                { id: 'dragon',   name: 'Dragon',   emoji: '🐉' },
-                { id: 'shark',    name: 'Shark',    emoji: '🦈' },
-                { id: 'whale',    name: 'Whale',    emoji: '🐋' },
-                { id: 'octopus',  name: 'Octopus',  emoji: '🐙' },
-                { id: 'crab',     name: 'Crab',     emoji: '🦀' },
-                { id: 'butterfly',name: 'Butterfly',emoji: '🦋' },
-                { id: 'bee',      name: 'Bee',      emoji: '🐝' },
-                { id: 'owl',      name: 'Owl',      emoji: '🦉' },
-                { id: 'parrot',   name: 'Parrot',   emoji: '🦜' },
+                { id: 'dog', name: 'Dog', emoji: '🐶' },
+                { id: 'cat', name: 'Cat', emoji: '🐱' },
+                { id: 'pig', name: 'Pig', emoji: '🐷' },
+                { id: 'sheep', name: 'Sheep', emoji: '🐑' },
+                { id: 'rabbit', name: 'Rabbit', emoji: '🐰' },
+                { id: 'dolphin', name: 'Dolphin', emoji: '🐬' },
+                { id: 'dino', name: 'Dino', emoji: '🦖' },
+                { id: 'turtle', name: 'Turtle', emoji: '🐢' },
+                { id: 'penguin', name: 'Penguin', emoji: '🐧' },
+                { id: 'monkey', name: 'Monkey', emoji: '🐵' },
+                { id: 'panda', name: 'Panda', emoji: '🐼' },
+                { id: 'frog', name: 'Frog', emoji: '🐸' },
+                { id: 'lion', name: 'Lion', emoji: '🦁' },
+                { id: 'tiger', name: 'Tiger', emoji: '🐯' },
+                { id: 'bear', name: 'Bear', emoji: '🐻' },
+                { id: 'koala', name: 'Koala', emoji: '🐨' },
+                { id: 'fox', name: 'Fox', emoji: '🦊' },
+                { id: 'wolf', name: 'Wolf', emoji: '🐺' },
+                { id: 'cow', name: 'Cow', emoji: '🐮' },
+                { id: 'horse', name: 'Horse', emoji: '🐴' },
+                { id: 'unicorn', name: 'Unicorn', emoji: '🦄' },
+                { id: 'dragon', name: 'Dragon', emoji: '🐉' },
+                { id: 'shark', name: 'Shark', emoji: '🦈' },
+                { id: 'whale', name: 'Whale', emoji: '🐋' },
+                { id: 'octopus', name: 'Octopus', emoji: '🐙' },
+                { id: 'crab', name: 'Crab', emoji: '🦀' },
+                { id: 'butterfly', name: 'Butterfly', emoji: '🦋' },
+                { id: 'bee', name: 'Bee', emoji: '🐝' },
+                { id: 'owl', name: 'Owl', emoji: '🦉' },
+                { id: 'parrot', name: 'Parrot', emoji: '🦜' },
             ];
 
             const DEFAULT_NAMES = [
@@ -588,6 +701,7 @@
                         students: students.map(s => ({
                             studentName: s.studentName,
                             score: s.score,
+                            activeSlot: s.activeSlot,
                             pets: s.pets.map(p => ({
                                 id: p.id, isEgg: p.isEgg, petName: p.petName,
                                 petType: p.petType, hunger: p.hunger, thirst: p.thirst,
@@ -609,6 +723,7 @@
                         id: i,
                         studentName: s.studentName || DEFAULT_NAMES[i] || `同学${i+1}`,
                         score: typeof s.score === 'number' ? s.score : INIT_SCORE,
+                        activeSlot: typeof s.activeSlot === 'number' ? Math.min(2, Math.max(0, s.activeSlot)) : 0,
                         pets: (s.pets || []).map(p => ({
                             id: p.id, isEgg: typeof p.isEgg === 'boolean' ? p.isEgg : true,
                             petName: p.petName || '蛋蛋', petType: p.petType || null,
@@ -642,6 +757,7 @@
                         id: i,
                         studentName: DEFAULT_NAMES[i] || `同学${i+1}`,
                         score: INIT_SCORE,
+                        activeSlot: 0,
                         pets: [createNewEgg(), createNewEgg(), createNewEgg()],
                     });
                 }
@@ -673,7 +789,6 @@
                 return '👶 Baby';
             }
 
-            // 🎵 返回旧阶段，方便比较是否升级
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
                 const oldStage = pet.stage;
@@ -686,11 +801,13 @@
                 }
                 if (newStage !== oldStage) {
                     pet.stage = newStage;
-                    // 🎉 升级音效！
-                    if (newStage !== 'baby') {
-                        SoundFX.levelUp();
-                    }
+                    if (newStage !== 'baby') SoundFX.levelUp();
                 }
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             }
 
             // ============ 渲染 ============
@@ -726,6 +843,7 @@
                 });
             }
 
+            // 🌟 主界面只显示当前选中的宠物
             function renderCards() {
                 const grid = document.getElementById('classGrid');
                 grid.innerHTML = '';
@@ -738,6 +856,7 @@
                 const card = document.createElement('div');
                 card.className = 'student-card';
 
+                // 顶部：主人名 + 分数
                 const top = document.createElement('div');
                 top.className = 'card-top';
 
@@ -773,18 +892,212 @@
                 top.appendChild(scoreDiv);
                 card.appendChild(top);
 
-                const slots = document.createElement('div');
-                slots.className = 'pet-slots';
-                student.pets.forEach((pet, slotIdx) => {
-                    slots.appendChild(createPetSlot(student, index, pet, slotIdx));
-                });
-                card.appendChild(slots);
+                // 槽位切换器（1/2/3）
+                const switcher = document.createElement('div');
+                switcher.className = 'slot-switcher';
+                for (let i = 0; i < SLOTS_PER_STUDENT; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'slot-switch-btn' + (student.activeSlot === i ? ' active' : '');
+                    const pet = student.pets[i];
+                    let dot = '';
+                    if (!pet.isEgg && pet.petType) {
+                        if (pet.stage === 'teen') dot = '🧒';
+                        else if (pet.stage === 'adult') dot = '🧑';
+                        else dot = '👶';
+                    }
+                    btn.innerHTML = `<span>${i + 1}</span><span class="stage-dot">${dot}</span>`;
+                    btn.title = `切换到宠物 ${i + 1}`;
+                    btn.addEventListener('click', () => {
+                        students[index].activeSlot = i;
+                        saveData();
+                        renderCards();
+                    });
+                    switcher.appendChild(btn);
+                }
+                card.appendChild(switcher);
+
+                // 🌟 只显示当前选中的宠物
+                const activePet = student.pets[student.activeSlot];
+                const singleDisplay = document.createElement('div');
+                singleDisplay.className = 'single-pet-display';
+
+                const emojiDiv = document.createElement('div');
+                emojiDiv.className = 'pet-emoji-sm ' + (activePet.isEgg ? 'egg ' : '') + 'stage-' + activePet.stage;
+                emojiDiv.textContent = getStageEmoji(activePet);
+                singleDisplay.appendChild(emojiDiv);
+
+                const petNameDiv = document.createElement('div');
+                petNameDiv.className = 'pet-name-sm';
+                petNameDiv.textContent = activePet.petName;
+                singleDisplay.appendChild(petNameDiv);
+
+                if (!activePet.isEgg) {
+                    const stageBadge = document.createElement('div');
+                    stageBadge.className = 'stage-badge ' + activePet.stage;
+                    stageBadge.textContent = getStageLabel(activePet.stage);
+                    singleDisplay.appendChild(stageBadge);
+                }
+
+                const mood = getMood(activePet);
+                const moodDiv = document.createElement('div');
+                moodDiv.className = 'mood-mini ' + mood.className;
+                moodDiv.textContent = mood.emoji + ' ' + mood.label;
+                singleDisplay.appendChild(moodDiv);
+
+                const statusMini = document.createElement('div');
+                statusMini.className = 'status-mini';
+                const hRow = document.createElement('div');
+                hRow.className = 'status-mini-row';
+                hRow.innerHTML = `<span>🍖</span><div class="bar-bg-xs"><div class="bar-fill-xs hunger" style="width:${activePet.hunger}%"></div></div>`;
+                const tRow = document.createElement('div');
+                tRow.className = 'status-mini-row';
+                tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${activePet.thirst}%"></div></div>`;
+                statusMini.appendChild(hRow);
+                statusMini.appendChild(tRow);
+                singleDisplay.appendChild(statusMini);
+
+                card.appendChild(singleDisplay);
+
+                // 🌟 快捷操作按钮（对当前选中的宠物）
+                const actions = document.createElement('div');
+                actions.className = 'slot-actions';
+
+                const hatchBtn = document.createElement('button');
+                hatchBtn.className = 'mini-btn hatch';
+                hatchBtn.innerHTML = '🐣20';
+                hatchBtn.title = 'Hatch (20 pts)';
+                hatchBtn.disabled = !activePet.isEgg || student.score < SCORE_HATCH_COST;
+                hatchBtn.addEventListener('click', () => handleHatch(index, student.activeSlot));
+                actions.appendChild(hatchBtn);
+
+                const fruitBtn = document.createElement('button');
+                fruitBtn.className = 'mini-btn feed';
+                fruitBtn.innerHTML = '🍎+1';
+                fruitBtn.disabled = student.score >= MAX_SCORE;
+                fruitBtn.addEventListener('click', () => handleFeed(index, student.activeSlot, 'fruit'));
+                actions.appendChild(fruitBtn);
+
+                const foodBtn = document.createElement('button');
+                foodBtn.className = 'mini-btn chicken';
+                foodBtn.innerHTML = '🍗+2';
+                foodBtn.disabled = student.score >= MAX_SCORE;
+                foodBtn.addEventListener('click', () => handleFeed(index, student.activeSlot, 'food'));
+                actions.appendChild(foodBtn);
+
+                const waterBtn = document.createElement('button');
+                waterBtn.className = 'mini-btn water';
+                waterBtn.innerHTML = '💧+1';
+                waterBtn.disabled = student.score >= MAX_SCORE;
+                waterBtn.addEventListener('click', () => handleWater(index, student.activeSlot));
+                actions.appendChild(waterBtn);
+
+                const thirstyBtn = document.createElement('button');
+                thirstyBtn.className = 'mini-btn thirsty';
+                thirstyBtn.innerHTML = '🥵-1';
+                if (activePet.isEgg) thirstyBtn.disabled = true;
+                else thirstyBtn.disabled = student.score < 1;
+                thirstyBtn.addEventListener('click', () => handleThirsty(index, student.activeSlot));
+                actions.appendChild(thirstyBtn);
+
+                const hungryBtn = document.createElement('button');
+                hungryBtn.className = 'mini-btn hungry';
+                hungryBtn.innerHTML = '😫-2';
+                if (activePet.isEgg) hungryBtn.disabled = true;
+                else hungryBtn.disabled = student.score < 2;
+                hungryBtn.addEventListener('click', () => handleHungry(index, student.activeSlot));
+                actions.appendChild(hungryBtn);
+
+                card.appendChild(actions);
+
+                // 🌟 打开个人页面按钮
+                const profileBtn = document.createElement('button');
+                profileBtn.className = 'open-profile-btn';
+                profileBtn.innerHTML = '📂 个人页面 (3 宠物)';
+                profileBtn.addEventListener('click', () => openProfile(index));
+                card.appendChild(profileBtn);
+
                 return card;
             }
 
-            function createPetSlot(student, studentIdx, pet, slotIdx) {
+            // ============ 个人页面弹窗 ============
+            function openProfile(studentIdx) {
+                const student = students[studentIdx];
+                const modal = document.getElementById('profileModal');
+                const content = document.getElementById('profileModalContent');
+
+                // 构建内容
+                content.innerHTML = '';
+
+                // 关闭按钮
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'modal-close';
+                closeBtn.innerHTML = '✕';
+                closeBtn.addEventListener('click', () => closeProfile());
+                content.appendChild(closeBtn);
+
+                // 头部
+                const header = document.createElement('div');
+                header.className = 'profile-header';
+                header.innerHTML = `
+                    <div class="profile-avatar">🧑‍🎓</div>
+                    <div class="profile-info">
+                        <div class="profile-owner-name">
+                            <span>👤</span>
+                            <input type="text" value="${escapeHtml(student.studentName)}" maxlength="12" id="profileNameInput">
+                        </div>
+                        <div class="profile-score">⭐ <span id="profileScoreDisplay">${student.score}</span> pts</div>
+                    </div>
+                `;
+                content.appendChild(header);
+
+                // 名字输入事件
+                setTimeout(() => {
+                    const nameInp = document.getElementById('profileNameInput');
+                    if (nameInp) {
+                        nameInp.addEventListener('input', (e) => {
+                            students[studentIdx].studentName = e.target.value.trim() || '同学';
+                            saveData();
+                            renderZoo(); renderFreeRange();
+                            renderCards();
+                        });
+                        nameInp.addEventListener('blur', (e) => {
+                            let val = e.target.value.trim();
+                            if (val === '') {
+                                students[studentIdx].studentName = DEFAULT_NAMES[studentIdx] || `同学${studentIdx+1}`;
+                                e.target.value = students[studentIdx].studentName;
+                            } else {
+                                students[studentIdx].studentName = val;
+                            }
+                            saveData();
+                            renderZoo(); renderFreeRange();
+                            renderCards();
+                        });
+                    }
+                }, 0);
+
+                // 3 个完整槽位
+                const slotsGrid = document.createElement('div');
+                slotsGrid.className = 'slots-grid';
+
+                student.pets.forEach((pet, slotIdx) => {
+                    slotsGrid.appendChild(createFullPetSlot(studentIdx, slotIdx, pet));
+                });
+
+                content.appendChild(slotsGrid);
+
+                // 打开
+                modal.classList.add('open');
+            }
+
+            function closeProfile() {
+                document.getElementById('profileModal').classList.remove('open');
+                // 刷新主界面
+                renderAll();
+            }
+
+            function createFullPetSlot(studentIdx, slotIdx, pet) {
                 const slot = document.createElement('div');
-                slot.className = 'pet-slot';
+                slot.className = 'full-pet-slot';
 
                 const label = document.createElement('div');
                 label.className = 'slot-label';
@@ -800,7 +1113,9 @@
                 petNameSpan.className = 'pet-name-sm';
                 petNameSpan.textContent = pet.petName;
                 petNameSpan.title = '点击修改宠物名字';
-                petNameSpan.addEventListener('click', () => startEditPetName(studentIdx, slotIdx, petNameSpan));
+                petNameSpan.addEventListener('click', () => {
+                    startEditPetName(studentIdx, slotIdx, petNameSpan);
+                });
                 slot.appendChild(petNameSpan);
 
                 if (!pet.isEgg) {
@@ -828,6 +1143,7 @@
                 statusMini.appendChild(tRow);
                 slot.appendChild(statusMini);
 
+                // 物种选择
                 if (!pet.isEgg) {
                     const choiceRow = document.createElement('div');
                     choiceRow.className = 'pet-choice-row';
@@ -840,64 +1156,64 @@
                             students[studentIdx].pets[slotIdx].petType = petType.id;
                             updateStage(students[studentIdx].pets[slotIdx]);
                             saveData();
-                            renderAll();
+                            // 刷新弹窗
+                            openProfile(studentIdx);
                         });
                         choiceRow.appendChild(btn);
                     });
                     slot.appendChild(choiceRow);
                 }
 
+                // 完整操作按钮
                 const actions = document.createElement('div');
-                actions.className = 'slot-actions';
+                actions.className = 'full-slot-actions';
 
                 const hatchBtn = document.createElement('button');
                 hatchBtn.className = 'mini-btn hatch';
-                hatchBtn.innerHTML = '🐣20';
-                hatchBtn.title = 'Hatch (20 pts)';
-                hatchBtn.disabled = !pet.isEgg || student.score < SCORE_HATCH_COST;
-                hatchBtn.addEventListener('click', () => handleHatch(studentIdx, slotIdx));
+                hatchBtn.innerHTML = '🐣 Hatch';
+                hatchBtn.disabled = !pet.isEgg || students[studentIdx].score < SCORE_HATCH_COST;
+                hatchBtn.addEventListener('click', () => { handleHatch(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(hatchBtn);
 
                 const fruitBtn = document.createElement('button');
                 fruitBtn.className = 'mini-btn feed';
-                fruitBtn.innerHTML = '🍎+1';
-                fruitBtn.disabled = student.score >= MAX_SCORE;
-                fruitBtn.addEventListener('click', () => handleFeed(studentIdx, slotIdx, 'fruit'));
+                fruitBtn.innerHTML = '🍎 Fruit +1';
+                fruitBtn.disabled = students[studentIdx].score >= MAX_SCORE;
+                fruitBtn.addEventListener('click', () => { handleFeed(studentIdx, slotIdx, 'fruit'); openProfile(studentIdx); });
                 actions.appendChild(fruitBtn);
 
                 const foodBtn = document.createElement('button');
                 foodBtn.className = 'mini-btn chicken';
-                foodBtn.innerHTML = '🍗+2';
-                foodBtn.disabled = student.score >= MAX_SCORE;
-                foodBtn.addEventListener('click', () => handleFeed(studentIdx, slotIdx, 'food'));
+                foodBtn.innerHTML = '🍗 Food +2';
+                foodBtn.disabled = students[studentIdx].score >= MAX_SCORE;
+                foodBtn.addEventListener('click', () => { handleFeed(studentIdx, slotIdx, 'food'); openProfile(studentIdx); });
                 actions.appendChild(foodBtn);
 
                 const waterBtn = document.createElement('button');
                 waterBtn.className = 'mini-btn water';
-                waterBtn.innerHTML = '💧+1';
-                waterBtn.disabled = student.score >= MAX_SCORE;
-                waterBtn.addEventListener('click', () => handleWater(studentIdx, slotIdx));
+                waterBtn.innerHTML = '💧 Water +1';
+                waterBtn.disabled = students[studentIdx].score >= MAX_SCORE;
+                waterBtn.addEventListener('click', () => { handleWater(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(waterBtn);
 
                 const thirstyBtn = document.createElement('button');
                 thirstyBtn.className = 'mini-btn thirsty';
-                thirstyBtn.innerHTML = '🥵-1';
-                thirstyBtn.title = 'Thirsty -1';
+                thirstyBtn.innerHTML = '🥵 -1';
                 if (pet.isEgg) thirstyBtn.disabled = true;
-                else thirstyBtn.disabled = student.score < 1;
-                thirstyBtn.addEventListener('click', () => handleThirsty(studentIdx, slotIdx));
+                else thirstyBtn.disabled = students[studentIdx].score < 1;
+                thirstyBtn.addEventListener('click', () => { handleThirsty(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(thirstyBtn);
 
                 const hungryBtn = document.createElement('button');
                 hungryBtn.className = 'mini-btn hungry';
-                hungryBtn.innerHTML = '😫-2';
-                hungryBtn.title = 'Hungry -2';
+                hungryBtn.innerHTML = '😫 -2';
                 if (pet.isEgg) hungryBtn.disabled = true;
-                else hungryBtn.disabled = student.score < 2;
-                hungryBtn.addEventListener('click', () => handleHungry(studentIdx, slotIdx));
+                else hungryBtn.disabled = students[studentIdx].score < 2;
+                hungryBtn.addEventListener('click', () => { handleHungry(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(hungryBtn);
 
                 slot.appendChild(actions);
+
                 return slot;
             }
 
@@ -920,6 +1236,7 @@
                     petNameSpan.textContent = val;
                     saveData();
                     renderZoo(); renderFreeRange();
+                    renderCards();
                 };
                 input.addEventListener('blur', finish);
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
@@ -975,23 +1292,16 @@
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
                 if (!pet.isEgg) return;
-                if (student.score < SCORE_HATCH_COST) {
-                    SoundFX.error();
-                    return;
-                }
+                if (student.score < SCORE_HATCH_COST) { SoundFX.error(); return; }
                 student.score -= SCORE_HATCH_COST;
                 pet.isEgg = false;
                 if (pet.petName === '蛋蛋') {
                     pet.petName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
                 }
-                pet.hunger = 100;
-                pet.thirst = 100;
-                pet.feedCount = 0;
-                pet.stage = 'baby';
-                pet.petType = null;
-                SoundFX.hatch();  // 🐣 孵蛋音效
-                saveData();
-                renderAll();
+                pet.hunger = 100; pet.thirst = 100;
+                pet.feedCount = 0; pet.stage = 'baby'; pet.petType = null;
+                SoundFX.hatch();
+                saveData(); renderAll();
                 startGlobalDecay();
             }
 
@@ -1001,22 +1311,13 @@
                 if (student.score >= MAX_SCORE) return;
                 const opt = FEED_OPTIONS[type];
                 if (!opt) return;
-                const oldScore = student.score;
                 student.score = Math.min(MAX_SCORE, student.score + opt.score);
-
                 if (opt.hunger > 0) pet.hunger = Math.min(100, pet.hunger + opt.hunger);
                 if (opt.thirst > 0) pet.thirst = Math.min(100, pet.thirst + opt.thirst);
-                if (!pet.isEgg) {
-                    pet.feedCount += 1;
-                    updateStage(pet);
-                }
-
-                // 🎵 播放对应音效
+                if (!pet.isEgg) { pet.feedCount += 1; updateStage(pet); }
                 if (type === 'fruit') SoundFX.fruit();
                 else if (type === 'food') SoundFX.food();
-
-                saveData();
-                renderAll();
+                saveData(); renderAll();
             }
 
             function handleWater(sIdx, slotIdx) {
@@ -1024,46 +1325,33 @@
                 const pet = student.pets[slotIdx];
                 if (student.score >= MAX_SCORE) return;
                 const opt = FEED_OPTIONS.water;
-                const oldScore = student.score;
                 student.score = Math.min(MAX_SCORE, student.score + opt.score);
                 pet.thirst = Math.min(100, pet.thirst + opt.thirst);
-                if (!pet.isEgg) {
-                    pet.feedCount += 1;
-                    updateStage(pet);
-                }
-                SoundFX.water();  // 💧 喝水音效
-                saveData();
-                renderAll();
+                if (!pet.isEgg) { pet.feedCount += 1; updateStage(pet); }
+                SoundFX.water();
+                saveData(); renderAll();
             }
 
             function handleThirsty(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 1) {
-                    SoundFX.error();
-                    return;
-                }
+                if (pet.isEgg || student.score < 1) { SoundFX.error(); return; }
                 student.score -= 1;
                 pet.thirst = Math.max(0, pet.thirst - 15);
                 updateStage(pet);
-                SoundFX.thirsty();  // 🥵 口渴音效
-                saveData();
-                renderAll();
+                SoundFX.thirsty();
+                saveData(); renderAll();
             }
 
             function handleHungry(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 2) {
-                    SoundFX.error();
-                    return;
-                }
+                if (pet.isEgg || student.score < 2) { SoundFX.error(); return; }
                 student.score -= 2;
                 pet.hunger = Math.max(0, pet.hunger - 20);
                 updateStage(pet);
-                SoundFX.hungry();  // 😫 饥饿音效
-                saveData();
-                renderAll();
+                SoundFX.hungry();
+                saveData(); renderAll();
             }
 
             function startGlobalDecay() {
@@ -1098,23 +1386,24 @@
                 startGlobalDecay();
             }
 
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-            }
-
-            // ============ 音效开关事件 ============
+            // ============ 音效开关 ============
             document.getElementById('soundToggle').addEventListener('click', () => {
                 soundEnabled = !soundEnabled;
                 updateSoundToggleUI();
-                // 播放一个确认音（如果是打开）
                 if (soundEnabled) SoundFX.fruit();
             });
 
-            // 首次用户交互时初始化音频上下文
-            document.body.addEventListener('click', () => {
-                getAudioCtx();
-            }, { once: true });
+            document.body.addEventListener('click', () => { getAudioCtx(); }, { once: true });
+
+            // 点击 overlay 关闭
+            document.getElementById('profileModal').addEventListener('click', (e) => {
+                if (e.target.id === 'profileModal') closeProfile();
+            });
+
+            // ESC 关闭
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeProfile();
+            });
 
             // ============ 启动 ============
             function initApp() {
