@@ -148,56 +148,58 @@
             white-space: nowrap;
         }
 
-        /* 宠物槽位切换器 */
-        .slot-switcher {
+        /* 🌟 轻量级宠物切换条（不再像 3 个 slot） */
+        .pet-tabs {
             display: flex; gap: 4px; margin-bottom: 6px;
             background: #f0e6d8; padding: 3px;
             border-radius: 40px; border: 1px solid #d6b28b;
+            width: fit-content;
         }
-        .slot-switch-btn {
+        .pet-tab {
             background: transparent; border: none;
-            border-radius: 40px; padding: 3px 10px;
+            border-radius: 40px; padding: 3px 12px;
             font-size: 0.75rem; font-weight: 800; color: #a08868;
             cursor: pointer; transition: all 0.15s;
             font-family: inherit;
-            display: flex; align-items: center; gap: 3px;
+            display: flex; align-items: center; gap: 4px;
+            min-width: 36px; justify-content: center;
         }
-        .slot-switch-btn.active {
+        .pet-tab.active {
             background: #ffdca8;
             color: #4b301a;
             box-shadow: 0 2px 0 #b97936;
         }
-        .slot-switch-btn:hover:not(.active) {
+        .pet-tab:hover:not(.active) {
             background: #e8dcc8;
         }
-        .slot-switch-btn .stage-dot {
-            font-size: 0.6rem;
+        .pet-tab .tab-emoji {
+            font-size: 0.85rem;
         }
 
-        /* 主界面显示的单宠物区 */
+        /* 🌟 唯一一个宠物显示区（主界面） */
         .single-pet-display {
             background: #f7ede0;
             border-radius: 24px;
-            padding: 10px 10px 12px;
+            padding: 12px 12px 14px;
             border: 2px solid #d9b382;
             display: flex; flex-direction: column; align-items: center;
             width: 100%;
-            min-height: 150px;
+            min-height: 190px;
             position: relative;
         }
         .pet-emoji-sm {
-            font-size: 3rem; line-height: 1;
+            font-size: 3.4rem; line-height: 1;
             filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.15));
             transition: transform 0.2s;
             margin-top: 4px;
         }
-        .pet-emoji-sm.egg { font-size: 2.6rem; }
-        .pet-emoji-sm.stage-baby { font-size: 2.4rem; }
-        .pet-emoji-sm.stage-teen { font-size: 2.8rem; }
-        .pet-emoji-sm.stage-adult { font-size: 3.2rem; }
+        .pet-emoji-sm.egg { font-size: 3rem; }
+        .pet-emoji-sm.stage-baby { font-size: 2.8rem; }
+        .pet-emoji-sm.stage-teen { font-size: 3.2rem; }
+        .pet-emoji-sm.stage-adult { font-size: 3.6rem; }
 
         .pet-name-sm {
-            font-size: 0.8rem; font-weight: 700; color: #5a3a1e;
+            font-size: 0.9rem; font-weight: 700; color: #5a3a1e;
             text-shadow: 1px 1px 0 #ffe3c1; margin-top: 4px;
             white-space: nowrap; max-width: 100%;
             overflow: hidden; text-overflow: ellipsis;
@@ -243,10 +245,9 @@
         .bar-fill-xs.hunger.low { background: linear-gradient(90deg, #e63946, #f77f7f); }
         .bar-fill-xs.thirst.low { background: linear-gradient(90deg, #d64545, #f28b8b); }
 
-        /* 主界面操作按钮 */
         .slot-actions {
             display: flex; flex-wrap: wrap; gap: 3px; width: 100%;
-            justify-content: center; margin-top: 4px;
+            justify-content: center; margin-top: 6px;
         }
         .mini-btn {
             background: #ffe3ba; border: none; border-radius: 30px;
@@ -270,7 +271,6 @@
         .mini-btn.thirsty { background: #c9e4ff; box-shadow: 0 2px 0 #5a8ab0; }
         .mini-btn.hungry { background: #ffd0d0; box-shadow: 0 2px 0 #b05a5a; }
 
-        /* 打开个人页面按钮 */
         .open-profile-btn {
             margin-top: 8px;
             width: 100%;
@@ -337,12 +337,8 @@
             padding-bottom: 16px;
             border-bottom: 2px dashed #d9b382;
         }
-        .profile-avatar {
-            font-size: 3rem;
-        }
-        .profile-info {
-            flex: 1;
-        }
+        .profile-avatar { font-size: 3rem; }
+        .profile-info { flex: 1; }
         .profile-owner-name {
             font-size: 1.4rem; font-weight: 800; color: #4e321a;
             display: flex; align-items: center; gap: 8px;
@@ -403,9 +399,7 @@
             font-family: inherit; border-bottom: 2px dashed #b48b5a;
         }
 
-        .full-pet-slot .status-mini {
-            margin: 10px 0 6px;
-        }
+        .full-pet-slot .status-mini { margin: 10px 0 6px; }
         .full-pet-slot .bar-bg-xs { height: 12px; }
         .full-pet-slot .status-mini-row { font-size: 0.75rem; }
 
@@ -514,7 +508,6 @@
 </head>
 <body>
 
-    <!-- 音效开关 -->
     <button class="sound-toggle" id="soundToggle" title="Toggle sound">
         <span id="soundIcon">🔊</span>
         <span id="soundText">Sound ON</span>
@@ -546,11 +539,8 @@
 
     <div class="free-range" id="freeRange"></div>
 
-    <!-- ============ 个人页面弹窗 ============ -->
     <div class="modal-overlay" id="profileModal">
-        <div class="profile-modal" id="profileModalContent">
-            <!-- 内容由 JS 填充 -->
-        </div>
+        <div class="profile-modal" id="profileModalContent"></div>
     </div>
 
     <script>
@@ -580,8 +570,7 @@
                 gain.gain.setValueAtTime(0, ctx.currentTime + delay);
                 gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+                osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(ctx.currentTime + delay);
                 osc.stop(ctx.currentTime + delay + duration + 0.05);
             }
@@ -633,7 +622,7 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v3';
+            const STORAGE_KEY = 'petGameZoo_v4';   // 升版本避免旧数据
 
             const STAGE_TEEN_FEED = 5;
             const STAGE_TEEN_SUM = 120;
@@ -843,7 +832,7 @@
                 });
             }
 
-            // 🌟 主界面只显示当前选中的宠物
+            // 🌟 每个学生卡片：只显示 1 个宠物 + 一个轻量切换条
             function renderCards() {
                 const grid = document.getElementById('classGrid');
                 grid.innerHTML = '';
@@ -856,7 +845,7 @@
                 const card = document.createElement('div');
                 card.className = 'student-card';
 
-                // 顶部：主人名 + 分数
+                // ---------- 顶部：主人名 + 分数 ----------
                 const top = document.createElement('div');
                 top.className = 'card-top';
 
@@ -888,61 +877,64 @@
 
                 const scoreDiv = document.createElement('div');
                 scoreDiv.className = 'mini-score';
-                scoreDiv.innerHTML = `<span>⭐</span><span class="score-value" data-role="score">${student.score}</span>`;
+                scoreDiv.innerHTML = `<span>⭐</span><span class="score-value">${student.score}</span>`;
                 top.appendChild(scoreDiv);
                 card.appendChild(top);
 
-                // 槽位切换器（1/2/3）
-                const switcher = document.createElement('div');
-                switcher.className = 'slot-switcher';
+                // ---------- 🌟 宠物切换条（只是切换按钮，不是 slot）----------
+                const tabs = document.createElement('div');
+                tabs.className = 'pet-tabs';
                 for (let i = 0; i < SLOTS_PER_STUDENT; i++) {
-                    const btn = document.createElement('button');
-                    btn.className = 'slot-switch-btn' + (student.activeSlot === i ? ' active' : '');
+                    const tab = document.createElement('button');
+                    tab.className = 'pet-tab' + (student.activeSlot === i ? ' active' : '');
                     const pet = student.pets[i];
-                    let dot = '';
+                    let tabEmoji = '';
                     if (!pet.isEgg && pet.petType) {
-                        if (pet.stage === 'teen') dot = '🧒';
-                        else if (pet.stage === 'adult') dot = '🧑';
-                        else dot = '👶';
+                        tabEmoji = getStageEmoji(pet);
+                    } else if (pet.isEgg) {
+                        tabEmoji = '🥚';
+                    } else {
+                        tabEmoji = '❓';
                     }
-                    btn.innerHTML = `<span>${i + 1}</span><span class="stage-dot">${dot}</span>`;
-                    btn.title = `切换到宠物 ${i + 1}`;
-                    btn.addEventListener('click', () => {
+                    tab.innerHTML = `<span>${i + 1}</span><span class="tab-emoji">${tabEmoji}</span>`;
+                    tab.title = `显示第 ${i + 1} 个宠物`;
+                    tab.addEventListener('click', () => {
                         students[index].activeSlot = i;
                         saveData();
                         renderCards();
                     });
-                    switcher.appendChild(btn);
+                    tabs.appendChild(tab);
                 }
-                card.appendChild(switcher);
+                card.appendChild(tabs);
 
-                // 🌟 只显示当前选中的宠物
+                // ---------- 🌟 唯一的宠物显示区 ----------
                 const activePet = student.pets[student.activeSlot];
-                const singleDisplay = document.createElement('div');
-                singleDisplay.className = 'single-pet-display';
+                const display = document.createElement('div');
+                display.className = 'single-pet-display';
 
                 const emojiDiv = document.createElement('div');
                 emojiDiv.className = 'pet-emoji-sm ' + (activePet.isEgg ? 'egg ' : '') + 'stage-' + activePet.stage;
                 emojiDiv.textContent = getStageEmoji(activePet);
-                singleDisplay.appendChild(emojiDiv);
+                display.appendChild(emojiDiv);
 
                 const petNameDiv = document.createElement('div');
                 petNameDiv.className = 'pet-name-sm';
                 petNameDiv.textContent = activePet.petName;
-                singleDisplay.appendChild(petNameDiv);
+                petNameDiv.title = '点击到个人页面修改名字';
+                display.appendChild(petNameDiv);
 
                 if (!activePet.isEgg) {
                     const stageBadge = document.createElement('div');
                     stageBadge.className = 'stage-badge ' + activePet.stage;
                     stageBadge.textContent = getStageLabel(activePet.stage);
-                    singleDisplay.appendChild(stageBadge);
+                    display.appendChild(stageBadge);
                 }
 
                 const mood = getMood(activePet);
                 const moodDiv = document.createElement('div');
                 moodDiv.className = 'mood-mini ' + mood.className;
                 moodDiv.textContent = mood.emoji + ' ' + mood.label;
-                singleDisplay.appendChild(moodDiv);
+                display.appendChild(moodDiv);
 
                 const statusMini = document.createElement('div');
                 statusMini.className = 'status-mini';
@@ -954,11 +946,11 @@
                 tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${activePet.thirst}%"></div></div>`;
                 statusMini.appendChild(hRow);
                 statusMini.appendChild(tRow);
-                singleDisplay.appendChild(statusMini);
+                display.appendChild(statusMini);
 
-                card.appendChild(singleDisplay);
+                card.appendChild(display);
 
-                // 🌟 快捷操作按钮（对当前选中的宠物）
+                // ---------- 快捷操作按钮（作用于当前显示的宠物） ----------
                 const actions = document.createElement('div');
                 actions.className = 'slot-actions';
 
@@ -1009,7 +1001,7 @@
 
                 card.appendChild(actions);
 
-                // 🌟 打开个人页面按钮
+                // ---------- 打开个人页面 ----------
                 const profileBtn = document.createElement('button');
                 profileBtn.className = 'open-profile-btn';
                 profileBtn.innerHTML = '📂 个人页面 (3 宠物)';
@@ -1025,17 +1017,14 @@
                 const modal = document.getElementById('profileModal');
                 const content = document.getElementById('profileModalContent');
 
-                // 构建内容
                 content.innerHTML = '';
 
-                // 关闭按钮
                 const closeBtn = document.createElement('button');
                 closeBtn.className = 'modal-close';
                 closeBtn.innerHTML = '✕';
                 closeBtn.addEventListener('click', () => closeProfile());
                 content.appendChild(closeBtn);
 
-                // 头部
                 const header = document.createElement('div');
                 header.className = 'profile-header';
                 header.innerHTML = `
@@ -1050,7 +1039,6 @@
                 `;
                 content.appendChild(header);
 
-                // 名字输入事件
                 setTimeout(() => {
                     const nameInp = document.getElementById('profileNameInput');
                     if (nameInp) {
@@ -1075,23 +1063,18 @@
                     }
                 }, 0);
 
-                // 3 个完整槽位
                 const slotsGrid = document.createElement('div');
                 slotsGrid.className = 'slots-grid';
-
                 student.pets.forEach((pet, slotIdx) => {
                     slotsGrid.appendChild(createFullPetSlot(studentIdx, slotIdx, pet));
                 });
-
                 content.appendChild(slotsGrid);
 
-                // 打开
                 modal.classList.add('open');
             }
 
             function closeProfile() {
                 document.getElementById('profileModal').classList.remove('open');
-                // 刷新主界面
                 renderAll();
             }
 
@@ -1113,9 +1096,7 @@
                 petNameSpan.className = 'pet-name-sm';
                 petNameSpan.textContent = pet.petName;
                 petNameSpan.title = '点击修改宠物名字';
-                petNameSpan.addEventListener('click', () => {
-                    startEditPetName(studentIdx, slotIdx, petNameSpan);
-                });
+                petNameSpan.addEventListener('click', () => startEditPetName(studentIdx, slotIdx, petNameSpan));
                 slot.appendChild(petNameSpan);
 
                 if (!pet.isEgg) {
@@ -1143,7 +1124,6 @@
                 statusMini.appendChild(tRow);
                 slot.appendChild(statusMini);
 
-                // 物种选择
                 if (!pet.isEgg) {
                     const choiceRow = document.createElement('div');
                     choiceRow.className = 'pet-choice-row';
@@ -1156,7 +1136,6 @@
                             students[studentIdx].pets[slotIdx].petType = petType.id;
                             updateStage(students[studentIdx].pets[slotIdx]);
                             saveData();
-                            // 刷新弹窗
                             openProfile(studentIdx);
                         });
                         choiceRow.appendChild(btn);
@@ -1164,7 +1143,6 @@
                     slot.appendChild(choiceRow);
                 }
 
-                // 完整操作按钮
                 const actions = document.createElement('div');
                 actions.className = 'full-slot-actions';
 
@@ -1213,7 +1191,6 @@
                 actions.appendChild(hungryBtn);
 
                 slot.appendChild(actions);
-
                 return slot;
             }
 
@@ -1395,18 +1372,20 @@
 
             document.body.addEventListener('click', () => { getAudioCtx(); }, { once: true });
 
-            // 点击 overlay 关闭
             document.getElementById('profileModal').addEventListener('click', (e) => {
                 if (e.target.id === 'profileModal') closeProfile();
             });
 
-            // ESC 关闭
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') closeProfile();
             });
 
             // ============ 启动 ============
             function initApp() {
+                // 🔧 清掉旧版本缓存，避免显示 3 个 slot 的旧数据
+                const OLD_KEYS = ['petGameZoo_v1', 'petGameZoo_v2', 'petGameZoo_v3'];
+                OLD_KEYS.forEach(k => localStorage.removeItem(k));
+
                 const loaded = loadData();
                 if (!loaded) initStudents();
                 renderAll();
