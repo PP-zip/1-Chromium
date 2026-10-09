@@ -31,13 +31,15 @@
         }
         .subhead .highlight { color: #c45d1a; font-weight: 800; }
 
-        /* 音效开关 */
-        .sound-toggle {
+        .top-buttons {
             position: fixed; top: 16px; right: 16px;
+            display: flex; gap: 8px; z-index: 100;
+        }
+        .sound-toggle {
             background: #fff6e9; border: 2px solid #d9b382;
             border-radius: 40px; padding: 8px 16px;
-            font-size: 1rem; font-weight: 700; color: #5a3a1e;
-            cursor: pointer; z-index: 100;
+            font-size: 0.95rem; font-weight: 700; color: #5a3a1e;
+            cursor: pointer;
             box-shadow: 0 4px 0 #b48b5a;
             font-family: inherit;
             display: flex; align-items: center; gap: 6px;
@@ -46,7 +48,6 @@
         .sound-toggle:active { transform: translateY(3px); box-shadow: 0 1px 0 #b48b5a; }
         .sound-toggle.muted { background: #e8e8e8; color: #999; }
 
-        /* 动物园围栏 */
         .zoo-section {
             max-width: 1400px; width: 100%; margin: 0 auto 24px;
             background: linear-gradient(180deg, #d4edc0 0%, #b8d9a0 100%);
@@ -54,7 +55,6 @@
             border: 4px dashed #7a9e5a;
             padding: 16px 20px 20px;
             box-shadow: inset 0 4px 20px rgba(90, 130, 60, 0.2), 0 8px 20px rgba(0,0,0,0.1);
-            position: relative;
         }
         .zoo-title {
             display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -102,7 +102,6 @@
             margin-top: 2px; white-space: nowrap;
         }
 
-        /* 学生网格 */
         .class-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
             max-width: 1400px; width: 100%; margin: 0 auto;
@@ -148,7 +147,6 @@
             white-space: nowrap;
         }
 
-        /* 🌟 轻量级宠物切换条（不再像 3 个 slot） */
         .pet-tabs {
             display: flex; gap: 4px; margin-bottom: 6px;
             background: #f0e6d8; padding: 3px;
@@ -157,7 +155,7 @@
         }
         .pet-tab {
             background: transparent; border: none;
-            border-radius: 40px; padding: 3px 12px;
+            border-radius: 40px; padding: 3px 10px;
             font-size: 0.75rem; font-weight: 800; color: #a08868;
             cursor: pointer; transition: all 0.15s;
             font-family: inherit;
@@ -169,14 +167,9 @@
             color: #4b301a;
             box-shadow: 0 2px 0 #b97936;
         }
-        .pet-tab:hover:not(.active) {
-            background: #e8dcc8;
-        }
-        .pet-tab .tab-emoji {
-            font-size: 0.85rem;
-        }
+        .pet-tab:hover:not(.active) { background: #e8dcc8; }
+        .pet-tab .tab-emoji { font-size: 0.9rem; }
 
-        /* 🌟 唯一一个宠物显示区（主界面） */
         .single-pet-display {
             background: #f7ede0;
             border-radius: 24px;
@@ -192,11 +185,39 @@
             filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.15));
             transition: transform 0.2s;
             margin-top: 4px;
+            min-height: 3.6rem;
+            display: flex; align-items: center; justify-content: center;
         }
         .pet-emoji-sm.egg { font-size: 3rem; }
-        .pet-emoji-sm.stage-baby { font-size: 2.8rem; }
-        .pet-emoji-sm.stage-teen { font-size: 3.2rem; }
-        .pet-emoji-sm.stage-adult { font-size: 3.6rem; }
+        .pet-emoji-sm.stage-baby { font-size: 2.6rem; }
+        .pet-emoji-sm.stage-teen { font-size: 3rem; }
+        .pet-emoji-sm.stage-adult { font-size: 3.4rem; }
+
+        /* 蛋表情动画 */
+        .egg-face {
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+        .egg-face.happy {
+            animation: eggHappy 0.6s ease;
+        }
+        .egg-face.sad {
+            animation: eggSad 0.6s ease;
+        }
+        @keyframes eggHappy {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-8deg); }
+            50% { transform: scale(1.3) rotate(8deg); }
+            75% { transform: scale(1.2) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        @keyframes eggSad {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(0.85) rotate(-6deg); }
+            50% { transform: scale(0.85) rotate(6deg); }
+            75% { transform: scale(0.9) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
 
         .pet-name-sm {
             font-size: 0.9rem; font-weight: 700; color: #5a3a1e;
@@ -287,7 +308,6 @@
         .open-profile-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #9c7c5a; }
         .open-profile-btn:hover { background: #e0c4a2; }
 
-        /* ============ 个人页面（弹窗） ============ */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(60, 40, 20, 0.6);
@@ -298,7 +318,6 @@
             backdrop-filter: blur(4px);
         }
         .modal-overlay.open { display: flex; }
-
         .profile-modal {
             background: #fffbf4;
             border-radius: 40px;
@@ -385,6 +404,11 @@
             font-size: 4rem;
             margin-top: 20px;
         }
+        .full-pet-slot .pet-emoji-sm.stage-baby { font-size: 3.4rem; }
+        .full-pet-slot .pet-emoji-sm.stage-teen { font-size: 4rem; }
+        .full-pet-slot .pet-emoji-sm.stage-adult { font-size: 4.6rem; }
+        .full-pet-slot .pet-emoji-sm.egg { font-size: 3.6rem; }
+
         .full-pet-slot .pet-name-sm {
             font-size: 1rem;
             margin-top: 8px;
@@ -398,7 +422,6 @@
             font-size: 1rem; width: 100px; text-align: center; outline: none;
             font-family: inherit; border-bottom: 2px dashed #b48b5a;
         }
-
         .full-pet-slot .status-mini { margin: 10px 0 6px; }
         .full-pet-slot .bar-bg-xs { height: 12px; }
         .full-pet-slot .status-mini-row { font-size: 0.75rem; }
@@ -421,7 +444,7 @@
             background: #fff;
             border: 1px solid #d6b28b;
             border-radius: 12px;
-            padding: 3px 5px; font-size: 0.9rem;
+            padding: 3px 5px; font-size: 0.95rem;
             cursor: pointer; transition: all 0.1s; font-family: inherit;
         }
         .pet-choice-btn:hover { background: #ffe3ba; }
@@ -481,9 +504,7 @@
             box-shadow: 0 5px 0 #a5835e;
             font-family: inherit;
         }
-        .global-reset button:active {
-            transform: translateY(3px); box-shadow: 0 2px 0 #a5835e;
-        }
+        .global-reset button:active { transform: translateY(3px); box-shadow: 0 2px 0 #a5835e; }
 
         @keyframes shake {
             0% { transform: rotate(0deg); }
@@ -508,10 +529,12 @@
 </head>
 <body>
 
-    <button class="sound-toggle" id="soundToggle" title="Toggle sound">
-        <span id="soundIcon">🔊</span>
-        <span id="soundText">Sound ON</span>
-    </button>
+    <div class="top-buttons">
+        <button class="sound-toggle" id="soundToggle" title="Toggle sound">
+            <span id="soundIcon">🔊</span>
+            <span id="soundText">Sound ON</span>
+        </button>
+    </div>
 
     <div class="app-header">
         <h1><span>🥚</span> Pet Game · Class Zoo <span>🦁</span></h1>
@@ -622,12 +645,14 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v4';   // 升版本避免旧数据
+            const STORAGE_KEY = 'petGameZoo_v5';
 
-            const STAGE_TEEN_FEED = 5;
-            const STAGE_TEEN_SUM = 120;
-            const STAGE_ADULT_FEED = 12;
-            const STAGE_ADULT_SUM = 180;
+            // 🌟 每个成长阶段需要达到的"目标分数"（根据喂养次数 + 状态总和）
+            const STAGE_TARGETS = {
+                baby:  { feed: 0,  sum: 0   },   // 幼年期：刚出生
+                teen:  { feed: 5,  sum: 120 },   // 青少年期：喂 5 次 + 状态 ≥ 120
+                adult: { feed: 12, sum: 180 },   // 成年期：喂 12 次 + 状态 ≥ 180
+            };
 
             const EGG_INIT_HUNGER = 0;
             const EGG_INIT_THIRST = 0;
@@ -638,37 +663,38 @@
                 food:  { score: 2, hunger: 25, thirst: 0,  icon: '🍗' },
             };
 
+            // 🌟 30 种宠物，每种有：宝宝表情 / 少年表情 / 成年表情
             const PET_TYPES = [
-                { id: 'dog', name: 'Dog', emoji: '🐶' },
-                { id: 'cat', name: 'Cat', emoji: '🐱' },
-                { id: 'pig', name: 'Pig', emoji: '🐷' },
-                { id: 'sheep', name: 'Sheep', emoji: '🐑' },
-                { id: 'rabbit', name: 'Rabbit', emoji: '🐰' },
-                { id: 'dolphin', name: 'Dolphin', emoji: '🐬' },
-                { id: 'dino', name: 'Dino', emoji: '🦖' },
-                { id: 'turtle', name: 'Turtle', emoji: '🐢' },
-                { id: 'penguin', name: 'Penguin', emoji: '🐧' },
-                { id: 'monkey', name: 'Monkey', emoji: '🐵' },
-                { id: 'panda', name: 'Panda', emoji: '🐼' },
-                { id: 'frog', name: 'Frog', emoji: '🐸' },
-                { id: 'lion', name: 'Lion', emoji: '🦁' },
-                { id: 'tiger', name: 'Tiger', emoji: '🐯' },
-                { id: 'bear', name: 'Bear', emoji: '🐻' },
-                { id: 'koala', name: 'Koala', emoji: '🐨' },
-                { id: 'fox', name: 'Fox', emoji: '🦊' },
-                { id: 'wolf', name: 'Wolf', emoji: '🐺' },
-                { id: 'cow', name: 'Cow', emoji: '🐮' },
-                { id: 'horse', name: 'Horse', emoji: '🐴' },
-                { id: 'unicorn', name: 'Unicorn', emoji: '🦄' },
-                { id: 'dragon', name: 'Dragon', emoji: '🐉' },
-                { id: 'shark', name: 'Shark', emoji: '🦈' },
-                { id: 'whale', name: 'Whale', emoji: '🐋' },
-                { id: 'octopus', name: 'Octopus', emoji: '🐙' },
-                { id: 'crab', name: 'Crab', emoji: '🦀' },
-                { id: 'butterfly', name: 'Butterfly', emoji: '🦋' },
-                { id: 'bee', name: 'Bee', emoji: '🐝' },
-                { id: 'owl', name: 'Owl', emoji: '🦉' },
-                { id: 'parrot', name: 'Parrot', emoji: '🦜' },
+                { id: 'dog',      name: 'Dog',      baby: '🐶', teen: '🐕', adult: '🐕‍🦺' },
+                { id: 'cat',      name: 'Cat',      baby: '🐱', teen: '🐈', adult: '🐈‍⬛' },
+                { id: 'pig',      name: 'Pig',      baby: '🐷', teen: '🐖', adult: '🐖' },
+                { id: 'sheep',    name: 'Sheep',    baby: '🐑', teen: '🐏', adult: '🐏' },
+                { id: 'rabbit',   name: 'Rabbit',   baby: '🐰', teen: '🐇', adult: '🐇' },
+                { id: 'dolphin',  name: 'Dolphin',  baby: '🐬', teen: '🐬', adult: '🐬' },
+                { id: 'dino',     name: 'Dino',     baby: '🦕', teen: '🦖', adult: '🦖' },
+                { id: 'turtle',   name: 'Turtle',   baby: '🐢', teen: '🐢', adult: '🐢' },
+                { id: 'penguin',  name: 'Penguin',  baby: '🐧', teen: '🐧', adult: '🐧' },
+                { id: 'monkey',   name: 'Monkey',   baby: '🐵', teen: '🐒', adult: '🦍' },
+                { id: 'panda',    name: 'Panda',    baby: '🐼', teen: '🐼', adult: '🐼' },
+                { id: 'frog',     name: 'Frog',     baby: '🐸', teen: '🐸', adult: '🐸' },
+                { id: 'lion',     name: 'Lion',     baby: '🦁', teen: '🦁', adult: '🦁' },
+                { id: 'tiger',    name: 'Tiger',    baby: '🐯', teen: '🐅', adult: '🐅' },
+                { id: 'bear',     name: 'Bear',     baby: '🐻', teen: '🐻', adult: '🐻‍❄️' },
+                { id: 'koala',    name: 'Koala',    baby: '🐨', teen: '🐨', adult: '🐨' },
+                { id: 'fox',      name: 'Fox',      baby: '🦊', teen: '🦊', adult: '🦊' },
+                { id: 'wolf',     name: 'Wolf',     baby: '🐺', teen: '🐺', adult: '🐺' },
+                { id: 'cow',      name: 'Cow',      baby: '🐮', teen: '🐄', adult: '🐄' },
+                { id: 'horse',    name: 'Horse',    baby: '🐴', teen: '🐎', adult: '🐎' },
+                { id: 'unicorn',  name: 'Unicorn',  baby: '🦄', teen: '🦄', adult: '🦄' },
+                { id: 'dragon',   name: 'Dragon',   baby: '🐲', teen: '🐉', adult: '🐉' },
+                { id: 'shark',    name: 'Shark',    baby: '🐟', teen: '🦈', adult: '🦈' },
+                { id: 'whale',    name: 'Whale',    baby: '🐳', teen: '🐋', adult: '🐋' },
+                { id: 'octopus',  name: 'Octopus',  baby: '🐙', teen: '🐙', adult: '🐙' },
+                { id: 'crab',     name: 'Crab',     baby: '🦀', teen: '🦀', adult: '🦀' },
+                { id: 'butterfly',name: 'Butterfly',baby: '🐛', teen: '🦋', adult: '🦋' },
+                { id: 'bee',      name: 'Bee',      baby: '🐝', teen: '🐝', adult: '🐝' },
+                { id: 'owl',      name: 'Owl',      baby: '🐣', teen: '🐥', adult: '🦉' },
+                { id: 'parrot',   name: 'Parrot',   baby: '🐤', teen: '🐦', adult: '🦜' },
             ];
 
             const DEFAULT_NAMES = [
@@ -682,6 +708,9 @@
             let students = [];
             let globalDecayInterval = null;
             let freeMoveInterval = null;
+
+            // 🌟 蛋的瞬时表情（happy/sad/smile）
+            const eggMoods = {};
 
             // ============ 保存/加载 ============
             function saveData() {
@@ -752,6 +781,58 @@
                 }
             }
 
+            // ============ 🌟 蛋表情（可爱 emoji） ============
+            // 平常：🥚（微笑蛋）
+            // 开心：😊 → 用 🥰 或 😊
+            // 伤心：😢
+            function getEggFace(petId) {
+                const m = eggMoods[petId];
+                if (m) {
+                    if (m.mood === 'happy') return '😊';
+                    if (m.mood === 'sad') return '😢';
+                }
+                return '🥚';   // 平常就是蛋 + 微笑暗示
+            }
+
+            // 蛋平常的"微笑版"（用于对比加分/扣分）
+            function getEggSmileFace() {
+                return '🥚';
+            }
+
+            // 🌟 根据成长阶段取对应表情
+            function getStageEmoji(pet) {
+                if (pet.isEgg) return '🥚';
+                if (!pet.petType) return '❓';
+                const t = PET_TYPES.find(p => p.id === pet.petType);
+                if (!t) return '❓';
+                if (pet.stage === 'baby') return t.baby || t.teen || '🐣';
+                if (pet.stage === 'teen') return t.teen || t.baby || '🐥';
+                if (pet.stage === 'adult') return t.adult || t.teen || '🐕';
+                return t.baby || '🐣';
+            }
+
+            function triggerEggMood(petId, mood) {
+                eggMoods[petId] = { mood: mood, expireAt: Date.now() + 1500 };
+                setTimeout(() => {
+                    if (eggMoods[petId] && eggMoods[petId].expireAt <= Date.now() + 100) {
+                        delete eggMoods[petId];
+                        refreshEggFace(petId);
+                    }
+                }, 1600);
+            }
+
+            function refreshEggFace(petId) {
+                document.querySelectorAll(`[data-pet-id="${petId}"] .egg-face`).forEach(el => {
+                    el.textContent = getEggFace(petId);
+                    el.classList.remove('happy', 'sad');
+                    const m = eggMoods[petId];
+                    if (m) {
+                        if (m.mood === 'happy') el.classList.add('happy');
+                        else if (m.mood === 'sad') el.classList.add('sad');
+                    }
+                });
+            }
+
             // ============ 工具 ============
             function getMood(pet) {
                 if (pet.isEgg) return { emoji: '🥚', label: 'Egg', className: 'okay' };
@@ -764,13 +845,6 @@
                 return { emoji: '😊', label: 'Happy', className: 'happy' };
             }
 
-            function getStageEmoji(pet) {
-                if (pet.isEgg) return '🥚';
-                if (!pet.petType) return '❓';
-                const t = PET_TYPES.find(p => p.id === pet.petType);
-                return t ? t.emoji : '❓';
-            }
-
             function getStageLabel(stage) {
                 if (stage === 'baby') return '👶 Baby';
                 if (stage === 'teen') return '🧒 Teen';
@@ -778,14 +852,23 @@
                 return '👶 Baby';
             }
 
+            // 🌟 根据当前阶段返回该阶段的目标分数（用于提示）
+            function getStageTarget(stage) {
+                if (stage === 'baby') return STAGE_TARGETS.teen;   // 下一个目标
+                if (stage === 'teen') return STAGE_TARGETS.adult;
+                if (stage === 'adult') return null;   // 已满级
+                return STAGE_TARGETS.teen;
+            }
+
+            // 🌟 更新成长阶段
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
                 const oldStage = pet.stage;
                 const sum = pet.hunger + pet.thirst;
                 let newStage = 'baby';
-                if (pet.feedCount >= STAGE_ADULT_FEED && sum >= STAGE_ADULT_SUM) {
+                if (pet.feedCount >= STAGE_TARGETS.adult.feed && sum >= STAGE_TARGETS.adult.sum) {
                     newStage = 'adult';
-                } else if (pet.feedCount >= STAGE_TEEN_FEED && sum >= STAGE_TEEN_SUM) {
+                } else if (pet.feedCount >= STAGE_TARGETS.teen.feed && sum >= STAGE_TARGETS.teen.sum) {
                     newStage = 'teen';
                 }
                 if (newStage !== oldStage) {
@@ -832,7 +915,6 @@
                 });
             }
 
-            // 🌟 每个学生卡片：只显示 1 个宠物 + 一个轻量切换条
             function renderCards() {
                 const grid = document.getElementById('classGrid');
                 grid.innerHTML = '';
@@ -845,7 +927,6 @@
                 const card = document.createElement('div');
                 card.className = 'student-card';
 
-                // ---------- 顶部：主人名 + 分数 ----------
                 const top = document.createElement('div');
                 top.className = 'card-top';
 
@@ -881,7 +962,6 @@
                 top.appendChild(scoreDiv);
                 card.appendChild(top);
 
-                // ---------- 🌟 宠物切换条（只是切换按钮，不是 slot）----------
                 const tabs = document.createElement('div');
                 tabs.className = 'pet-tabs';
                 for (let i = 0; i < SLOTS_PER_STUDENT; i++) {
@@ -889,10 +969,10 @@
                     tab.className = 'pet-tab' + (student.activeSlot === i ? ' active' : '');
                     const pet = student.pets[i];
                     let tabEmoji = '';
-                    if (!pet.isEgg && pet.petType) {
+                    if (pet.isEgg) {
+                        tabEmoji = getEggFace(pet.id);
+                    } else if (pet.petType) {
                         tabEmoji = getStageEmoji(pet);
-                    } else if (pet.isEgg) {
-                        tabEmoji = '🥚';
                     } else {
                         tabEmoji = '❓';
                     }
@@ -907,14 +987,18 @@
                 }
                 card.appendChild(tabs);
 
-                // ---------- 🌟 唯一的宠物显示区 ----------
                 const activePet = student.pets[student.activeSlot];
                 const display = document.createElement('div');
                 display.className = 'single-pet-display';
+                display.dataset.petId = activePet.id;
 
                 const emojiDiv = document.createElement('div');
                 emojiDiv.className = 'pet-emoji-sm ' + (activePet.isEgg ? 'egg ' : '') + 'stage-' + activePet.stage;
-                emojiDiv.textContent = getStageEmoji(activePet);
+                if (activePet.isEgg) {
+                    emojiDiv.innerHTML = `<span class="egg-face">${getEggFace(activePet.id)}</span>`;
+                } else {
+                    emojiDiv.textContent = getStageEmoji(activePet);
+                }
                 display.appendChild(emojiDiv);
 
                 const petNameDiv = document.createElement('div');
@@ -950,7 +1034,6 @@
 
                 card.appendChild(display);
 
-                // ---------- 快捷操作按钮（作用于当前显示的宠物） ----------
                 const actions = document.createElement('div');
                 actions.className = 'slot-actions';
 
@@ -986,22 +1069,21 @@
                 const thirstyBtn = document.createElement('button');
                 thirstyBtn.className = 'mini-btn thirsty';
                 thirstyBtn.innerHTML = '🥵-1';
-                if (activePet.isEgg) thirstyBtn.disabled = true;
-                else thirstyBtn.disabled = student.score < 1;
+                thirstyBtn.title = 'Thirsty -1';
+                thirstyBtn.disabled = student.score < 1;
                 thirstyBtn.addEventListener('click', () => handleThirsty(index, student.activeSlot));
                 actions.appendChild(thirstyBtn);
 
                 const hungryBtn = document.createElement('button');
                 hungryBtn.className = 'mini-btn hungry';
                 hungryBtn.innerHTML = '😫-2';
-                if (activePet.isEgg) hungryBtn.disabled = true;
-                else hungryBtn.disabled = student.score < 2;
+                hungryBtn.title = 'Hungry -2';
+                hungryBtn.disabled = student.score < 2;
                 hungryBtn.addEventListener('click', () => handleHungry(index, student.activeSlot));
                 actions.appendChild(hungryBtn);
 
                 card.appendChild(actions);
 
-                // ---------- 打开个人页面 ----------
                 const profileBtn = document.createElement('button');
                 profileBtn.className = 'open-profile-btn';
                 profileBtn.innerHTML = '📂 个人页面 (3 宠物)';
@@ -1089,7 +1171,12 @@
 
                 const emojiDiv = document.createElement('div');
                 emojiDiv.className = 'pet-emoji-sm ' + (pet.isEgg ? 'egg ' : '') + 'stage-' + pet.stage;
-                emojiDiv.textContent = getStageEmoji(pet);
+                if (pet.isEgg) {
+                    emojiDiv.innerHTML = `<span class="egg-face">${getEggFace(pet.id)}</span>`;
+                } else {
+                    emojiDiv.textContent = getStageEmoji(pet);
+                }
+                emojiDiv.dataset.petId = pet.id;
                 slot.appendChild(emojiDiv);
 
                 const petNameSpan = document.createElement('div');
@@ -1104,6 +1191,15 @@
                     stageBadge.className = 'stage-badge ' + pet.stage;
                     stageBadge.textContent = getStageLabel(pet.stage);
                     slot.appendChild(stageBadge);
+
+                    // 🌟 显示下一阶段的目标
+                    const target = getStageTarget(pet.stage);
+                    if (target) {
+                        const targetInfo = document.createElement('div');
+                        targetInfo.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px;';
+                        targetInfo.textContent = `🎯 Next: feed ${target.feed}× & sum ≥ ${target.sum}`;
+                        slot.appendChild(targetInfo);
+                    }
                 }
 
                 const mood = getMood(pet);
@@ -1130,7 +1226,7 @@
                     PET_TYPES.forEach(petType => {
                         const btn = document.createElement('button');
                         btn.className = 'pet-choice-btn' + (pet.petType === petType.id ? ' active' : '');
-                        btn.innerHTML = petType.emoji;
+                        btn.innerHTML = petType.baby;
                         btn.title = petType.name;
                         btn.addEventListener('click', () => {
                             students[studentIdx].pets[slotIdx].petType = petType.id;
@@ -1177,16 +1273,14 @@
                 const thirstyBtn = document.createElement('button');
                 thirstyBtn.className = 'mini-btn thirsty';
                 thirstyBtn.innerHTML = '🥵 -1';
-                if (pet.isEgg) thirstyBtn.disabled = true;
-                else thirstyBtn.disabled = students[studentIdx].score < 1;
+                thirstyBtn.disabled = students[studentIdx].score < 1;
                 thirstyBtn.addEventListener('click', () => { handleThirsty(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(thirstyBtn);
 
                 const hungryBtn = document.createElement('button');
                 hungryBtn.className = 'mini-btn hungry';
                 hungryBtn.innerHTML = '😫 -2';
-                if (pet.isEgg) hungryBtn.disabled = true;
-                else hungryBtn.disabled = students[studentIdx].score < 2;
+                hungryBtn.disabled = students[studentIdx].score < 2;
                 hungryBtn.addEventListener('click', () => { handleHungry(studentIdx, slotIdx); openProfile(studentIdx); });
                 actions.appendChild(hungryBtn);
 
@@ -1294,7 +1388,15 @@
                 if (!pet.isEgg) { pet.feedCount += 1; updateStage(pet); }
                 if (type === 'fruit') SoundFX.fruit();
                 else if (type === 'food') SoundFX.food();
-                saveData(); renderAll();
+
+                if (pet.isEgg) {
+                    triggerEggMood(pet.id, 'happy');
+                    refreshEggFace(pet.id);
+                    setTimeout(() => renderCards(), 50);
+                }
+
+                saveData();
+                renderAll();
             }
 
             function handleWater(sIdx, slotIdx) {
@@ -1306,28 +1408,49 @@
                 pet.thirst = Math.min(100, pet.thirst + opt.thirst);
                 if (!pet.isEgg) { pet.feedCount += 1; updateStage(pet); }
                 SoundFX.water();
+
+                if (pet.isEgg) {
+                    triggerEggMood(pet.id, 'happy');
+                    refreshEggFace(pet.id);
+                    setTimeout(() => renderCards(), 50);
+                }
+
                 saveData(); renderAll();
             }
 
             function handleThirsty(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 1) { SoundFX.error(); return; }
+                if (student.score < 1) { SoundFX.error(); return; }
                 student.score -= 1;
                 pet.thirst = Math.max(0, pet.thirst - 15);
                 updateStage(pet);
                 SoundFX.thirsty();
+
+                if (pet.isEgg) {
+                    triggerEggMood(pet.id, 'sad');
+                    refreshEggFace(pet.id);
+                    setTimeout(() => renderCards(), 50);
+                }
+
                 saveData(); renderAll();
             }
 
             function handleHungry(sIdx, slotIdx) {
                 const student = students[sIdx];
                 const pet = student.pets[slotIdx];
-                if (pet.isEgg || student.score < 2) { SoundFX.error(); return; }
+                if (student.score < 2) { SoundFX.error(); return; }
                 student.score -= 2;
                 pet.hunger = Math.max(0, pet.hunger - 20);
                 updateStage(pet);
                 SoundFX.hungry();
+
+                if (pet.isEgg) {
+                    triggerEggMood(pet.id, 'sad');
+                    refreshEggFace(pet.id);
+                    setTimeout(() => renderCards(), 50);
+                }
+
                 saveData(); renderAll();
             }
 
@@ -1363,7 +1486,7 @@
                 startGlobalDecay();
             }
 
-            // ============ 音效开关 ============
+            // ============ 事件绑定 ============
             document.getElementById('soundToggle').addEventListener('click', () => {
                 soundEnabled = !soundEnabled;
                 updateSoundToggleUI();
@@ -1382,10 +1505,6 @@
 
             // ============ 启动 ============
             function initApp() {
-                // 🔧 清掉旧版本缓存，避免显示 3 个 slot 的旧数据
-                const OLD_KEYS = ['petGameZoo_v1', 'petGameZoo_v2', 'petGameZoo_v3'];
-                OLD_KEYS.forEach(k => localStorage.removeItem(k));
-
                 const loaded = loadData();
                 if (!loaded) initStudents();
                 renderAll();
