@@ -83,6 +83,7 @@
             border: 2px solid #8aae6a;
             box-shadow: 0 4px 0 rgba(90, 130, 60, 0.3);
             animation: zooBob 2s ease-in-out infinite;
+            position: relative;
         }
         .zoo-pet:nth-child(odd) { animation-delay: 0.5s; }
         @keyframes zooBob {
@@ -187,11 +188,49 @@
             margin-top: 4px;
             min-height: 3.6rem;
             display: flex; align-items: center; justify-content: center;
+            position: relative;
         }
         .pet-emoji-sm.egg { font-size: 3rem; }
         .pet-emoji-sm.stage-baby { font-size: 2.6rem; }
         .pet-emoji-sm.stage-teen { font-size: 3.2rem; }
         .pet-emoji-sm.stage-adult { font-size: 3.8rem; }
+
+        .final-crown {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.4rem;
+            animation: crownFloat 2s ease-in-out infinite;
+            filter: drop-shadow(0 2px 3px rgba(255, 200, 0, 0.6));
+            z-index: 2;
+        }
+        @keyframes crownFloat {
+            0%, 100% { transform: translateX(-50%) translateY(0) rotate(-5deg); }
+            50% { transform: translateX(-50%) translateY(-3px) rotate(5deg); }
+        }
+        .final-sparkle {
+            position: absolute;
+            top: -20px;
+            right: -10px;
+            font-size: 1.2rem;
+            animation: sparkle 1.5s ease-in-out infinite;
+            z-index: 2;
+        }
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.3) rotate(20deg); opacity: 0.7; }
+        }
+        .final-eyes {
+            position: absolute;
+            top: 38%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            pointer-events: none;
+            opacity: 0.9;
+            z-index: 2;
+        }
 
         .egg-face {
             transition: transform 0.2s ease;
@@ -238,6 +277,11 @@
         .stage-badge.baby { background: #ffe0b8; color: #b06a1a; }
         .stage-badge.teen { background: #c8e8b8; color: #3a7a1a; }
         .stage-badge.adult { background: #ffd0e0; color: #b02a5a; }
+        .stage-badge.final {
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            color: #7a4a00;
+            box-shadow: 0 0 0 2px #ffb86b;
+        }
 
         .mood-mini {
             font-size: 0.65rem; font-weight: 700;
@@ -482,6 +526,8 @@
             font-size: 4rem;
             filter: drop-shadow(3px 5px 4px rgba(0, 0, 0, 0.2));
             animation: freeBounce 1.8s ease-in-out infinite;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
         }
         @keyframes freeBounce {
             0%, 100% { transform: translateY(0) scaleX(1); }
@@ -543,8 +589,8 @@
         <h1><span>🥚</span> Pet Game · Class Zoo <span>🦁</span></h1>
         <div class="subhead">
             🐾 25 students · 30 animals · 
-            <span class="highlight">Hatch needs 20 pts</span> · 
-            Baby → Teen (feed≥5 & sum≥100) · Teen → Adult (feed≥12 & sum≥150)
+            <span class="highlight">Hatch 20 pts</span> · 
+            Baby→Teen (5 feeds & 5 growth) · Teen→Adult (12 & 12) · Adult→Final (30 & 30)
         </div>
     </div>
 
@@ -571,7 +617,7 @@
 
     <script>
         (function() {
-            // ============ 🔉 音效引擎 ============
+            // ============ 音效 ============
             let audioCtx = null;
             let soundEnabled = true;
 
@@ -626,6 +672,7 @@
                 hatch() { playTone(523, 0.14, 'sine', 0.18, 0); playTone(659, 0.14, 'sine', 0.18, 0.12); playTone(784, 0.22, 'sine', 0.2, 0.24); },
                 levelUp() { playTone(659, 0.12, 'triangle', 0.18, 0); playTone(784, 0.12, 'triangle', 0.18, 0.1); playTone(1046, 0.14, 'triangle', 0.2, 0.2); playTone(1318, 0.3, 'sine', 0.18, 0.34); },
                 levelDown() { playTone(392, 0.15, 'triangle', 0.15, 0); playTone(330, 0.18, 'triangle', 0.15, 0.12); playTone(262, 0.25, 'sine', 0.12, 0.25); },
+                finalForm() { playTone(523, 0.15, 'sine', 0.2, 0); playTone(659, 0.15, 'sine', 0.2, 0.12); playTone(784, 0.15, 'sine', 0.2, 0.24); playTone(1046, 0.3, 'triangle', 0.22, 0.36); playTone(1318, 0.4, 'sine', 0.2, 0.5); },
                 error() { playTone(200, 0.15, 'square', 0.1); },
             };
 
@@ -649,32 +696,27 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v8';
+            const STORAGE_KEY = 'petGameZoo_v11';
 
             const DEMOTION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
 
-            // 🌟 阶段门槛（严格：喂养次数 + 总分都满足）
-            // Baby → Teen：feedCount ≥ 5 且 sum ≥ 100
-            // Teen → Adult：feedCount ≥ 12 且 sum ≥ 150
-            // 保持 Adult：sum ≥ 150
-            // 达到 180 分：永久锁定 Adult
+            // 阶段门槛（feedCount 和 growthScore 分别判断）
             const STAGE_TARGETS = {
-                teen:  { feed: 5,  sum: 100 },
-                adult: { feed: 12, sum: 150 },
-                lockAdultSum: 180,
+                teen:  { feed: 5,  growth: 5  },
+                adult: { feed: 12, growth: 12 },
+                final: { feed: 30, growth: 30 },
             };
 
-            // 孵化后的初始状态：0（不是满！）
             const EGG_INIT_HUNGER = 0;
             const EGG_INIT_THIRST = 0;
-            // 孵化后同样是 0，必须靠喂养攒
             const HATCH_INIT_HUNGER = 0;
             const HATCH_INIT_THIRST = 0;
 
+            // 🌟 喂养选项：进度条与分数单位一致
             const FEED_OPTIONS = {
-                water: { score: 1, hunger: 0,  thirst: 15, icon: '💧' },
-                fruit: { score: 1, hunger: 12, thirst: 5,  icon: '🍎' },
-                food:  { score: 2, hunger: 25, thirst: 0,  icon: '🍗' },
+                water: { score: 1, hunger: 0, thirst: 1, icon: '💧', growth: 1, feed: 1 },
+                fruit: { score: 1, hunger: 1, thirst: 1, icon: '🍎', growth: 1, feed: 1 },
+                food:  { score: 2, hunger: 2, thirst: 0, icon: '🍗', growth: 2, feed: 1 },
             };
 
             const PET_TYPES = [
@@ -721,7 +763,6 @@
             let students = [];
             let globalDecayInterval = null;
             let freeMoveInterval = null;
-
             const eggMoods = {};
 
             // ============ 保存/加载 ============
@@ -735,9 +776,11 @@
                             pets: s.pets.map(p => ({
                                 id: p.id, isEgg: p.isEgg, petName: p.petName,
                                 petType: p.petType, hunger: p.hunger, thirst: p.thirst,
-                                feedCount: p.feedCount, stage: p.stage,
+                                feedCount: p.feedCount, growthScore: p.growthScore || 0,
+                                stage: p.stage,
                                 lastFedTime: p.lastFedTime || 0,
                                 adultLocked: p.adultLocked || false,
+                                finalFormUnlocked: p.finalFormUnlocked || false,
                             })),
                         })),
                     };
@@ -762,9 +805,11 @@
                             hunger: typeof p.hunger === 'number' ? p.hunger : EGG_INIT_HUNGER,
                             thirst: typeof p.thirst === 'number' ? p.thirst : EGG_INIT_THIRST,
                             feedCount: typeof p.feedCount === 'number' ? p.feedCount : 0,
+                            growthScore: typeof p.growthScore === 'number' ? p.growthScore : 0,
                             stage: p.stage || 'baby',
                             lastFedTime: typeof p.lastFedTime === 'number' ? p.lastFedTime : 0,
                             adultLocked: typeof p.adultLocked === 'boolean' ? p.adultLocked : false,
+                            finalFormUnlocked: typeof p.finalFormUnlocked === 'boolean' ? p.finalFormUnlocked : false,
                         })),
                     }));
                     students.forEach(s => {
@@ -780,9 +825,10 @@
                     id: 'pet_' + Math.random().toString(36).substr(2, 9),
                     isEgg: true, petName: '蛋蛋', petType: null,
                     hunger: EGG_INIT_HUNGER, thirst: EGG_INIT_THIRST,
-                    feedCount: 0, stage: 'baby',
+                    feedCount: 0, growthScore: 0, stage: 'baby',
                     lastFedTime: 0,
                     adultLocked: false,
+                    finalFormUnlocked: false,
                 };
             }
 
@@ -843,10 +889,13 @@
                 return t.baby;
             }
 
-            function getStageLabel(stage) {
+            function getStageLabel(stage, finalFormUnlocked) {
                 if (stage === 'baby') return '👶 Baby';
                 if (stage === 'teen') return '🧒 Teen';
-                if (stage === 'adult') return '🧑 Adult';
+                if (stage === 'adult') {
+                    if (finalFormUnlocked) return '👑 Final Form';
+                    return '🧑 Adult';
+                }
                 return '👶 Baby';
             }
 
@@ -861,83 +910,83 @@
                 return { emoji: '😊', label: 'Happy', className: 'happy' };
             }
 
-            // ============ 🌟 核心：更新阶段（严格双条件 + 升级清空进度条） ============
+            // ============ 🌟 核心：updateStage ============
+            // 规则：
+            // 1. 喂养：feedCount+1，growthScore 按类型加（水果/水+1，鸡腿+2）
+            // 2. 扣分：score-1/-2，growthScore-1/-2，feedCount 不变
+            // 3. 升级条件：feedCount 和 growthScore 分别达标
+            // 4. 升级后：hunger/thirst/feedCount/growthScore 全清零
+            // 5. 扣分后：如果条件不满足，保持当前阶段，不升不降
+            // 6. 降级：只有 3 天没喂 + 状态不达标才降级
+            // 7. finalFormUnlocked=true 后永不降级
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
 
                 const now = Date.now();
                 const sum = pet.hunger + pet.thirst;
 
-                // 🎯 永久锁定 Adult：sum ≥ 180 且喂养次数 ≥ 12
-                if (sum >= STAGE_TARGETS.lockAdultSum && pet.feedCount >= STAGE_TARGETS.adult.feed) {
-                    if (pet.stage !== 'adult' || !pet.adultLocked) {
-                        pet.stage = 'adult';
-                        pet.adultLocked = true;
-                        // 升级到 Adult 时清空进度条
-                        pet.hunger = 0;
-                        pet.thirst = 0;
-                        SoundFX.levelUp();
-                    }
+                // 🎯 最终形态已解锁，永久保持 Adult，不降级
+                if (pet.finalFormUnlocked) {
+                    pet.stage = 'adult';
                     return;
                 }
 
                 const oldStage = pet.stage;
-                // 严格判断：喂养次数 + 总分 都要满足
-                const canBeAdult = pet.feedCount >= STAGE_TARGETS.adult.feed && sum >= STAGE_TARGETS.adult.sum;
-                const canBeTeen = pet.feedCount >= STAGE_TARGETS.teen.feed && sum >= STAGE_TARGETS.teen.sum;
 
-                let newStage = oldStage;
-                let upgraded = false;
-
+                // 🎯 Adult 阶段：检查是否解锁最终形态
                 if (oldStage === 'adult') {
-                    // Adult 降级：3 天没喂 + sum < 150
-                    if (sum < STAGE_TARGETS.adult.sum && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
-                        newStage = canBeTeen ? 'teen' : 'baby';
-                        SoundFX.levelDown();
-                    } else {
-                        newStage = 'adult';
+                    if (pet.feedCount >= STAGE_TARGETS.final.feed && pet.growthScore >= STAGE_TARGETS.final.growth) {
+                        pet.finalFormUnlocked = true;
+                        SoundFX.finalForm();
+                        return;
                     }
-                } else if (oldStage === 'teen') {
-                    if (canBeAdult) {
-                        newStage = 'adult';
-                        upgraded = true;
-                    } else if (sum < STAGE_TARGETS.teen.sum && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
-                        newStage = 'baby';
-                        SoundFX.levelDown();
-                    } else {
-                        newStage = 'teen';
-                    }
-                } else {
-                    // Baby：只能升级
-                    if (canBeAdult) {
-                        newStage = 'adult';
-                        upgraded = true;
-                    } else if (canBeTeen) {
-                        newStage = 'teen';
-                        upgraded = true;
-                    } else {
-                        newStage = 'baby';
-                    }
-                }
-
-                if (newStage !== pet.stage) {
-                    pet.stage = newStage;
-                    // 🌟 升级时清空进度条
-                    if (upgraded) {
+                    // 降级：3 天没喂 + sum < 150
+                    if (sum < 150 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
+                        pet.stage = 'teen';
                         pet.hunger = 0;
                         pet.thirst = 0;
+                        pet.feedCount = 0;
+                        pet.growthScore = 0;
+                        SoundFX.levelDown();
+                        return;
+                    }
+                    return;
+                }
+
+                // 🎯 Teen 阶段
+                if (oldStage === 'teen') {
+                    if (pet.feedCount >= STAGE_TARGETS.adult.feed && pet.growthScore >= STAGE_TARGETS.adult.growth) {
+                        pet.stage = 'adult';
+                        pet.hunger = 0;
+                        pet.thirst = 0;
+                        pet.feedCount = 0;
+                        pet.growthScore = 0;
                         SoundFX.levelUp();
+                        return;
                     }
-                }
-
-                // 再次检查 180 分锁定
-                if (sum >= STAGE_TARGETS.lockAdultSum && pet.feedCount >= STAGE_TARGETS.adult.feed) {
-                    pet.stage = 'adult';
-                    pet.adultLocked = true;
-                    // 锁定 Adult 也清空进度条（如果刚刚升级）
-                    if (oldStage !== 'adult') {
+                    // 降级：3 天没喂 + sum < 100
+                    if (sum < 100 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
+                        pet.stage = 'baby';
                         pet.hunger = 0;
                         pet.thirst = 0;
+                        pet.feedCount = 0;
+                        pet.growthScore = 0;
+                        SoundFX.levelDown();
+                        return;
+                    }
+                    return;
+                }
+
+                // 🎯 Baby 阶段
+                if (oldStage === 'baby') {
+                    if (pet.feedCount >= STAGE_TARGETS.teen.feed && pet.growthScore >= STAGE_TARGETS.teen.growth) {
+                        pet.stage = 'teen';
+                        pet.hunger = 0;
+                        pet.thirst = 0;
+                        pet.feedCount = 0;
+                        pet.growthScore = 0;
+                        SoundFX.levelUp();
+                        return;
                     }
                 }
             }
@@ -960,6 +1009,7 @@
                             teens.push({
                                 petId: p.id, ownerName: s.studentName,
                                 petName: p.petName, emoji: getStageEmoji(p),
+                                finalForm: p.finalFormUnlocked,
                             });
                         }
                     });
@@ -972,6 +1022,8 @@
                     const div = document.createElement('div');
                     div.className = 'zoo-pet';
                     div.innerHTML = `
+                        ${t.finalForm ? '<div class="final-sparkle">✨</div>' : ''}
+                        ${t.finalForm ? '<div class="final-crown">👑</div>' : ''}
                         <div class="zoo-pet-emoji">${t.emoji}</div>
                         <div class="zoo-pet-name">${escapeHtml(t.petName)}</div>
                         <div class="zoo-pet-owner">👤 ${escapeHtml(t.ownerName)}</div>
@@ -1062,7 +1114,16 @@
                 if (activePet.isEgg) {
                     emojiDiv.innerHTML = `<span class="egg-face">${getEggFace(activePet.id)}</span>`;
                 } else {
-                    emojiDiv.textContent = getStageEmoji(activePet);
+                    let innerHtml = getStageEmoji(activePet);
+                    if (activePet.finalFormUnlocked) {
+                        innerHtml = `
+                            <div class="final-sparkle">✨</div>
+                            <div class="final-crown">👑</div>
+                            <div class="final-eyes">😊</div>
+                            ${innerHtml}
+                        `;
+                    }
+                    emojiDiv.innerHTML = innerHtml;
                 }
                 display.appendChild(emojiDiv);
 
@@ -1077,8 +1138,8 @@
 
                 if (!activePet.isEgg) {
                     const stageBadge = document.createElement('div');
-                    stageBadge.className = 'stage-badge ' + activePet.stage;
-                    stageBadge.textContent = getStageLabel(activePet.stage);
+                    stageBadge.className = 'stage-badge ' + (activePet.finalFormUnlocked ? 'final' : activePet.stage);
+                    stageBadge.textContent = getStageLabel(activePet.stage, activePet.finalFormUnlocked);
                     display.appendChild(stageBadge);
                 }
 
@@ -1092,10 +1153,10 @@
                 statusMini.className = 'status-mini';
                 const hRow = document.createElement('div');
                 hRow.className = 'status-mini-row';
-                hRow.innerHTML = `<span>🍖</span><div class="bar-bg-xs"><div class="bar-fill-xs hunger" style="width:${activePet.hunger}%"></div></div>`;
+                hRow.innerHTML = `<span>🍖</span><div class="bar-bg-xs"><div class="bar-fill-xs hunger" style="width:${Math.min(100, activePet.hunger)}%"></div></div>`;
                 const tRow = document.createElement('div');
                 tRow.className = 'status-mini-row';
-                tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${activePet.thirst}%"></div></div>`;
+                tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${Math.min(100, activePet.thirst)}%"></div></div>`;
                 statusMini.appendChild(hRow);
                 statusMini.appendChild(tRow);
                 display.appendChild(statusMini);
@@ -1242,7 +1303,16 @@
                 if (pet.isEgg) {
                     emojiDiv.innerHTML = `<span class="egg-face">${getEggFace(pet.id)}</span>`;
                 } else {
-                    emojiDiv.textContent = getStageEmoji(pet);
+                    let innerHtml = getStageEmoji(pet);
+                    if (pet.finalFormUnlocked) {
+                        innerHtml = `
+                            <div class="final-sparkle">✨</div>
+                            <div class="final-crown">👑</div>
+                            <div class="final-eyes">😊</div>
+                            ${innerHtml}
+                        `;
+                    }
+                    emojiDiv.innerHTML = innerHtml;
                 }
                 emojiDiv.dataset.petId = pet.id;
                 slot.appendChild(emojiDiv);
@@ -1256,34 +1326,24 @@
 
                 if (!pet.isEgg) {
                     const stageBadge = document.createElement('div');
-                    stageBadge.className = 'stage-badge ' + pet.stage;
-                    stageBadge.textContent = getStageLabel(pet.stage);
+                    stageBadge.className = 'stage-badge ' + (pet.finalFormUnlocked ? 'final' : pet.stage);
+                    stageBadge.textContent = getStageLabel(pet.stage, pet.finalFormUnlocked);
                     slot.appendChild(stageBadge);
 
                     // 显示下一阶段目标
+                    const targetDiv = document.createElement('div');
+                    targetDiv.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center;';
                     if (pet.stage === 'baby') {
-                        const targetInfo = document.createElement('div');
-                        targetInfo.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center;';
-                        targetInfo.textContent = `🎯 Teen: feed ${STAGE_TARGETS.teen.feed}× & sum ≥ ${STAGE_TARGETS.teen.sum}`;
-                        slot.appendChild(targetInfo);
+                        targetDiv.textContent = `🎯 Teen: ${pet.feedCount}/${STAGE_TARGETS.teen.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.teen.growth} growth`;
                     } else if (pet.stage === 'teen') {
-                        const targetInfo = document.createElement('div');
-                        targetInfo.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center;';
-                        targetInfo.textContent = `🎯 Adult: feed ${STAGE_TARGETS.adult.feed}× & sum ≥ ${STAGE_TARGETS.adult.sum}`;
-                        slot.appendChild(targetInfo);
-                    } else if (pet.stage === 'adult') {
-                        if (pet.adultLocked) {
-                            const targetInfo = document.createElement('div');
-                            targetInfo.style.cssText = 'font-size:0.65rem; color:#b02a5a; margin-top:4px; background:#ffd0e0; padding:2px 8px; border-radius:10px; text-align:center; font-weight:800;';
-                            targetInfo.textContent = '🔒 Adult Locked (180+)';
-                            slot.appendChild(targetInfo);
-                        } else {
-                            const targetInfo = document.createElement('div');
-                            targetInfo.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center;';
-                            targetInfo.textContent = `🎯 Lock: sum ≥ ${STAGE_TARGETS.lockAdultSum}`;
-                            slot.appendChild(targetInfo);
-                        }
+                        targetDiv.textContent = `🎯 Adult: ${pet.feedCount}/${STAGE_TARGETS.adult.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.adult.growth} growth`;
+                    } else if (pet.stage === 'adult' && !pet.finalFormUnlocked) {
+                        targetDiv.textContent = `👑 Final: ${pet.feedCount}/${STAGE_TARGETS.final.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.final.growth} growth`;
+                    } else if (pet.finalFormUnlocked) {
+                        targetDiv.style.cssText = 'font-size:0.65rem; color:#b02a5a; margin-top:4px; background:#ffd0e0; padding:2px 8px; border-radius:10px; text-align:center; font-weight:800;';
+                        targetDiv.textContent = '🔒 Final Form Locked';
                     }
+                    slot.appendChild(targetDiv);
                 }
 
                 const mood = getMood(pet);
@@ -1296,10 +1356,10 @@
                 statusMini.className = 'status-mini';
                 const hRow = document.createElement('div');
                 hRow.className = 'status-mini-row';
-                hRow.innerHTML = `<span>🍖</span><div class="bar-bg-xs"><div class="bar-fill-xs hunger" style="width:${pet.hunger}%"></div></div>`;
+                hRow.innerHTML = `<span>🍖</span><div class="bar-bg-xs"><div class="bar-fill-xs hunger" style="width:${Math.min(100, pet.hunger)}%"></div></div>`;
                 const tRow = document.createElement('div');
                 tRow.className = 'status-mini-row';
-                tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${pet.thirst}%"></div></div>`;
+                tRow.innerHTML = `<span>💧</span><div class="bar-bg-xs"><div class="bar-fill-xs thirst" style="width:${Math.min(100, pet.thirst)}%"></div></div>`;
                 statusMini.appendChild(hRow);
                 statusMini.appendChild(tRow);
                 slot.appendChild(statusMini);
@@ -1407,6 +1467,7 @@
                             adults.push({
                                 petId: p.id, ownerName: s.studentName,
                                 petName: p.petName, emoji: getStageEmoji(p),
+                                finalForm: p.finalFormUnlocked,
                             });
                         }
                     });
@@ -1420,7 +1481,11 @@
                     div.style.top = (Math.random() * (h - 100) + 30) + 'px';
                     div.dataset.petId = a.petId;
                     div.innerHTML = `
-                        <div class="free-pet-emoji">${a.emoji}</div>
+                        <div class="free-pet-emoji">
+                            ${a.finalForm ? '<div class="final-sparkle">✨</div>' : ''}
+                            ${a.finalForm ? '<div class="final-crown">👑</div>' : ''}
+                            ${a.emoji}
+                        </div>
                         <div class="free-pet-name">${escapeHtml(a.petName)} · ${escapeHtml(a.ownerName)}</div>
                     `;
                     container.appendChild(div);
@@ -1453,12 +1518,15 @@
                 if (pet.petName === '蛋蛋') {
                     pet.petName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
                 }
-                // 🌟 孵化后状态从 0 开始（必须靠喂养攒 sum）
                 pet.hunger = HATCH_INIT_HUNGER;
                 pet.thirst = HATCH_INIT_THIRST;
-                pet.feedCount = 0; pet.stage = 'baby'; pet.petType = null;
+                pet.feedCount = 0;
+                pet.growthScore = 0;
+                pet.stage = 'baby';
+                pet.petType = null;
                 pet.lastFedTime = Date.now();
                 pet.adultLocked = false;
+                pet.finalFormUnlocked = false;
                 SoundFX.hatch();
                 saveData(); renderAll();
                 startGlobalDecay();
@@ -1474,7 +1542,8 @@
                 if (opt.hunger > 0) pet.hunger = Math.min(100, pet.hunger + opt.hunger);
                 if (opt.thirst > 0) pet.thirst = Math.min(100, pet.thirst + opt.thirst);
                 if (!pet.isEgg) {
-                    pet.feedCount += 1;
+                    pet.feedCount += opt.feed;
+                    pet.growthScore += opt.growth;
                     pet.lastFedTime = Date.now();
                     updateStage(pet);
                 }
@@ -1499,7 +1568,8 @@
                 student.score = Math.min(MAX_SCORE, student.score + opt.score);
                 pet.thirst = Math.min(100, pet.thirst + opt.thirst);
                 if (!pet.isEgg) {
-                    pet.feedCount += 1;
+                    pet.feedCount += opt.feed;
+                    pet.growthScore += opt.growth;
                     pet.lastFedTime = Date.now();
                     updateStage(pet);
                 }
@@ -1519,7 +1589,11 @@
                 const pet = student.pets[slotIdx];
                 if (student.score < 1) { SoundFX.error(); return; }
                 student.score -= 1;
-                pet.thirst = Math.max(0, pet.thirst - 15);
+                pet.thirst = Math.max(0, pet.thirst - 1);
+                // 🌟 扣分也扣 growthScore，但不扣 feedCount
+                if (!pet.isEgg) {
+                    pet.growthScore = Math.max(0, pet.growthScore - 1);
+                }
                 updateStage(pet);
                 SoundFX.thirsty();
 
@@ -1537,7 +1611,10 @@
                 const pet = student.pets[slotIdx];
                 if (student.score < 2) { SoundFX.error(); return; }
                 student.score -= 2;
-                pet.hunger = Math.max(0, pet.hunger - 20);
+                pet.hunger = Math.max(0, pet.hunger - 2);
+                if (!pet.isEgg) {
+                    pet.growthScore = Math.max(0, pet.growthScore - 2);
+                }
                 updateStage(pet);
                 SoundFX.hungry();
 
