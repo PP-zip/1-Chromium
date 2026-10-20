@@ -15,7 +15,6 @@
             position: relative;
             overflow-x: hidden;
         }
-
         .app-header { text-align: center; margin-bottom: 20px; width: 100%; }
         .app-header h1 {
             font-size: 2.6rem; letter-spacing: 3px; color: #6b3f1c;
@@ -312,6 +311,17 @@
         .bar-fill-xs.thirst { background: linear-gradient(90deg, #4aa3f0, #7ac4ff); }
         .bar-fill-xs.hunger.low { background: linear-gradient(90deg, #e63946, #f77f7f); }
         .bar-fill-xs.thirst.low { background: linear-gradient(90deg, #d64545, #f28b8b); }
+
+        .debug-info {
+            font-size: 0.55rem;
+            color: #8a6a1a;
+            background: #fff5d9;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-top: 3px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #e8d09a;
+        }
 
         .slot-actions {
             display: flex; flex-wrap: wrap; gap: 3px; width: 100%;
@@ -696,16 +706,17 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v12';
+            const STORAGE_KEY = 'petGameZoo_v13';
 
             const DEMOTION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
 
-            // 🌟 核心修复：growth 门槛必须够 100/150/180，不能只靠喂养次数
-            const STAGE_TARGETS = {
-                teen:  { feed: 5,  growth: 100 },   // ✅ 5次喂养 + 100成长分
-                adult: { feed: 12, growth: 150 },   // ✅ 12次喂养 + 150成长分
-                final: { feed: 30, growth: 180 },   // ✅ 30次喂养 + 180成长分
-            };
+            // 🌟 硬编码门槛（绝对不会有歧义）
+            const TEEN_FEED = 5;
+            const TEEN_GROWTH = 100;
+            const ADULT_FEED = 12;
+            const ADULT_GROWTH = 150;
+            const FINAL_FEED = 30;
+            const FINAL_GROWTH = 180;
 
             const EGG_INIT_HUNGER = 0;
             const EGG_INIT_THIRST = 0;
@@ -719,36 +730,36 @@
             };
 
             const PET_TYPES = [
-                { id: 'dog',      name: 'Dog',      baby: '🐶', teen: '🐕', adult: '🐕‍🦺' },
-                { id: 'cat',      name: 'Cat',      baby: '🐱', teen: '🐈', adult: '🐈‍⬛' },
-                { id: 'pig',      name: 'Pig',      baby: '🐷', teen: '🐖', adult: '🐖' },
-                { id: 'sheep',    name: 'Sheep',    baby: '🐑', teen: '🐏', adult: '🐏' },
-                { id: 'rabbit',   name: 'Rabbit',   baby: '🐰', teen: '🐇', adult: '🐇' },
-                { id: 'dolphin',  name: 'Dolphin',  baby: '🐬', teen: '🐬', adult: '🐬' },
-                { id: 'dino',     name: 'Dino',     baby: '🦕', teen: '🦖', adult: '🦖' },
-                { id: 'turtle',   name: 'Turtle',   baby: '🐢', teen: '🐢', adult: '🐢' },
-                { id: 'penguin',  name: 'Penguin',  baby: '🐧', teen: '🐧', adult: '🐧' },
-                { id: 'monkey',   name: 'Monkey',   baby: '🐵', teen: '🐒', adult: '🦍' },
-                { id: 'panda',    name: 'Panda',    baby: '🐼', teen: '🐼', adult: '🐼' },
-                { id: 'frog',     name: 'Frog',     baby: '🐸', teen: '🐸', adult: '🐸' },
-                { id: 'lion',     name: 'Lion',     baby: '🦁', teen: '🦁', adult: '🦁' },
-                { id: 'tiger',    name: 'Tiger',    baby: '🐯', teen: '🐅', adult: '🐅' },
-                { id: 'bear',     name: 'Bear',     baby: '🐻', teen: '🐻', adult: '🐻‍❄️' },
-                { id: 'koala',    name: 'Koala',    baby: '🐨', teen: '🐨', adult: '🐨' },
-                { id: 'fox',      name: 'Fox',      baby: '🦊', teen: '🦊', adult: '🦊' },
-                { id: 'wolf',     name: 'Wolf',     baby: '🐺', teen: '🐺', adult: '🐺' },
-                { id: 'cow',      name: 'Cow',      baby: '🐮', teen: '🐄', adult: '🐄' },
-                { id: 'horse',    name: 'Horse',    baby: '🐴', teen: '🐎', adult: '🐎' },
-                { id: 'unicorn',  name: 'Unicorn',  baby: '🦄', teen: '🦄', adult: '🦄' },
-                { id: 'dragon',   name: 'Dragon',   baby: '🐲', teen: '🐉', adult: '🐉' },
-                { id: 'shark',    name: 'Shark',    baby: '🐟', teen: '🦈', adult: '🦈' },
-                { id: 'whale',    name: 'Whale',    baby: '🐳', teen: '🐋', adult: '🐋' },
-                { id: 'octopus',  name: 'Octopus',  baby: '🐙', teen: '🐙', adult: '🐙' },
-                { id: 'crab',     name: 'Crab',     baby: '🦀', teen: '🦀', adult: '🦀' },
-                { id: 'butterfly',name: 'Butterfly',baby: '🐛', teen: '🦋', adult: '🦋' },
-                { id: 'bee',      name: 'Bee',      baby: '🐝', teen: '🐝', adult: '🐝' },
-                { id: 'owl',      name: 'Owl',      baby: '🐣', teen: '🐥', adult: '🦉' },
-                { id: 'parrot',   name: 'Parrot',   baby: '🐤', teen: '🐦', adult: '🦜' },
+                { id: 'dog', name: 'Dog', baby: '🐶', teen: '🐕', adult: '🐕‍🦺' },
+                { id: 'cat', name: 'Cat', baby: '🐱', teen: '🐈', adult: '🐈‍⬛' },
+                { id: 'pig', name: 'Pig', baby: '🐷', teen: '🐖', adult: '🐖' },
+                { id: 'sheep', name: 'Sheep', baby: '🐑', teen: '🐏', adult: '🐏' },
+                { id: 'rabbit', name: 'Rabbit', baby: '🐰', teen: '🐇', adult: '🐇' },
+                { id: 'dolphin', name: 'Dolphin', baby: '🐬', teen: '🐬', adult: '🐬' },
+                { id: 'dino', name: 'Dino', baby: '🦕', teen: '🦖', adult: '🦖' },
+                { id: 'turtle', name: 'Turtle', baby: '🐢', teen: '🐢', adult: '🐢' },
+                { id: 'penguin', name: 'Penguin', baby: '🐧', teen: '🐧', adult: '🐧' },
+                { id: 'monkey', name: 'Monkey', baby: '🐵', teen: '🐒', adult: '🦍' },
+                { id: 'panda', name: 'Panda', baby: '🐼', teen: '🐼', adult: '🐼' },
+                { id: 'frog', name: 'Frog', baby: '🐸', teen: '🐸', adult: '🐸' },
+                { id: 'lion', name: 'Lion', baby: '🦁', teen: '🦁', adult: '🦁' },
+                { id: 'tiger', name: 'Tiger', baby: '🐯', teen: '🐅', adult: '🐅' },
+                { id: 'bear', name: 'Bear', baby: '🐻', teen: '🐻', adult: '🐻‍❄️' },
+                { id: 'koala', name: 'Koala', baby: '🐨', teen: '🐨', adult: '🐨' },
+                { id: 'fox', name: 'Fox', baby: '🦊', teen: '🦊', adult: '🦊' },
+                { id: 'wolf', name: 'Wolf', baby: '🐺', teen: '🐺', adult: '🐺' },
+                { id: 'cow', name: 'Cow', baby: '🐮', teen: '🐄', adult: '🐄' },
+                { id: 'horse', name: 'Horse', baby: '🐴', teen: '🐎', adult: '🐎' },
+                { id: 'unicorn', name: 'Unicorn', baby: '🦄', teen: '🦄', adult: '🦄' },
+                { id: 'dragon', name: 'Dragon', baby: '🐲', teen: '🐉', adult: '🐉' },
+                { id: 'shark', name: 'Shark', baby: '🐟', teen: '🦈', adult: '🦈' },
+                { id: 'whale', name: 'Whale', baby: '🐳', teen: '🐋', adult: '🐋' },
+                { id: 'octopus', name: 'Octopus', baby: '🐙', teen: '🐙', adult: '🐙' },
+                { id: 'crab', name: 'Crab', baby: '🦀', teen: '🦀', adult: '🦀' },
+                { id: 'butterfly', name: 'Butterfly', baby: '🐛', teen: '🦋', adult: '🦋' },
+                { id: 'bee', name: 'Bee', baby: '🐝', teen: '🐝', adult: '🐝' },
+                { id: 'owl', name: 'Owl', baby: '🐣', teen: '🐥', adult: '🦉' },
+                { id: 'parrot', name: 'Parrot', baby: '🐤', teen: '🐦', adult: '🦜' },
             ];
 
             const DEFAULT_NAMES = [
@@ -787,6 +798,7 @@
                 } catch (e) { console.warn('Save failed:', e); }
             }
 
+            // 🌟 关键修复：加载数据时重新校验阶段，不匹配就降到 baby
             function loadData() {
                 try {
                     const raw = localStorage.getItem(STORAGE_KEY);
@@ -798,18 +810,38 @@
                         studentName: s.studentName || DEFAULT_NAMES[i] || `同学${i+1}`,
                         score: typeof s.score === 'number' ? s.score : INIT_SCORE,
                         activeSlot: typeof s.activeSlot === 'number' ? Math.min(2, Math.max(0, s.activeSlot)) : 0,
-                        pets: (s.pets || []).map(p => ({
-                            id: p.id, isEgg: typeof p.isEgg === 'boolean' ? p.isEgg : true,
-                            petName: p.petName || '蛋蛋', petType: p.petType || null,
-                            hunger: typeof p.hunger === 'number' ? p.hunger : EGG_INIT_HUNGER,
-                            thirst: typeof p.thirst === 'number' ? p.thirst : EGG_INIT_THIRST,
-                            feedCount: typeof p.feedCount === 'number' ? p.feedCount : 0,
-                            growthScore: typeof p.growthScore === 'number' ? p.growthScore : 0,
-                            stage: p.stage || 'baby',
-                            lastFedTime: typeof p.lastFedTime === 'number' ? p.lastFedTime : 0,
-                            adultLocked: typeof p.adultLocked === 'boolean' ? p.adultLocked : false,
-                            finalFormUnlocked: typeof p.finalFormUnlocked === 'boolean' ? p.finalFormUnlocked : false,
-                        })),
+                        pets: (s.pets || []).map(p => {
+                            const pet = {
+                                id: p.id || 'pet_' + Math.random().toString(36).substr(2, 9),
+                                isEgg: typeof p.isEgg === 'boolean' ? p.isEgg : true,
+                                petName: p.petName || '蛋蛋',
+                                petType: p.petType || null,
+                                hunger: typeof p.hunger === 'number' ? p.hunger : EGG_INIT_HUNGER,
+                                thirst: typeof p.thirst === 'number' ? p.thirst : EGG_INIT_THIRST,
+                                feedCount: typeof p.feedCount === 'number' ? p.feedCount : 0,
+                                growthScore: typeof p.growthScore === 'number' ? p.growthScore : 0,
+                                stage: p.stage || 'baby',
+                                lastFedTime: typeof p.lastFedTime === 'number' ? p.lastFedTime : 0,
+                                adultLocked: typeof p.adultLocked === 'boolean' ? p.adultLocked : false,
+                                finalFormUnlocked: typeof p.finalFormUnlocked === 'boolean' ? p.finalFormUnlocked : false,
+                            };
+                            // 🔥 重新校验阶段：如果不满足条件，强制降到对应阶段
+                            if (!pet.isEgg) {
+                                if (pet.finalFormUnlocked) {
+                                    pet.stage = 'adult';
+                                } else if (pet.stage === 'adult' && !(pet.feedCount >= ADULT_FEED && pet.growthScore >= ADULT_GROWTH)) {
+                                    // 不满足 Adult 条件，降到 Teen 或 Baby
+                                    if (pet.feedCount >= TEEN_FEED && pet.growthScore >= TEEN_GROWTH) {
+                                        pet.stage = 'teen';
+                                    } else {
+                                        pet.stage = 'baby';
+                                    }
+                                } else if (pet.stage === 'teen' && !(pet.feedCount >= TEEN_FEED && pet.growthScore >= TEEN_GROWTH)) {
+                                    pet.stage = 'baby';
+                                }
+                            }
+                            return pet;
+                        }),
                     }));
                     students.forEach(s => {
                         while (s.pets.length < SLOTS_PER_STUDENT) s.pets.push(createNewEgg());
@@ -910,45 +942,35 @@
             }
 
             // ============ 🌟 核心：updateStage ============
-            // Baby → Teen：feedCount >= 5 且 growthScore >= 100
-            // Teen → Adult：feedCount >= 12 且 growthScore >= 150
-            // Adult → Final：feedCount >= 30 且 growthScore >= 180
+            // 严格双条件：feedCount 和 growthScore 都达标才升级
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
 
-                const now = Date.now();
-                const sum = pet.hunger + pet.thirst;
-
-                // 最终形态已解锁，永久保持 Adult
+                // 最终形态已解锁，永久保持
                 if (pet.finalFormUnlocked) {
                     pet.stage = 'adult';
                     return;
                 }
 
+                const now = Date.now();
+                const sum = pet.hunger + pet.thirst;
                 const oldStage = pet.stage;
 
-                // 🎯 Adult 阶段
-                if (oldStage === 'adult') {
-                    if (pet.feedCount >= STAGE_TARGETS.final.feed && pet.growthScore >= STAGE_TARGETS.final.growth) {
-                        pet.finalFormUnlocked = true;
-                        SoundFX.finalForm();
-                        return;
-                    }
-                    if (sum < 150 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
+                // 🎯 Baby 阶段：升级到 Teen 需要 feedCount >= 5 且 growthScore >= 100
+                if (oldStage === 'baby') {
+                    if (pet.feedCount >= TEEN_FEED && pet.growthScore >= TEEN_GROWTH) {
                         pet.stage = 'teen';
                         pet.hunger = 0;
                         pet.thirst = 0;
                         pet.feedCount = 0;
                         pet.growthScore = 0;
-                        SoundFX.levelDown();
+                        SoundFX.levelUp();
                         return;
                     }
-                    return;
                 }
-
-                // 🎯 Teen 阶段
-                if (oldStage === 'teen') {
-                    if (pet.feedCount >= STAGE_TARGETS.adult.feed && pet.growthScore >= STAGE_TARGETS.adult.growth) {
+                // 🎯 Teen 阶段：升级到 Adult 需要 feedCount >= 12 且 growthScore >= 150
+                else if (oldStage === 'teen') {
+                    if (pet.feedCount >= ADULT_FEED && pet.growthScore >= ADULT_GROWTH) {
                         pet.stage = 'adult';
                         pet.hunger = 0;
                         pet.thirst = 0;
@@ -957,6 +979,7 @@
                         SoundFX.levelUp();
                         return;
                     }
+                    // 降级：3 天没喂 + sum < 100
                     if (sum < 100 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         pet.stage = 'baby';
                         pet.hunger = 0;
@@ -966,18 +989,22 @@
                         SoundFX.levelDown();
                         return;
                     }
-                    return;
                 }
-
-                // 🎯 Baby 阶段
-                if (oldStage === 'baby') {
-                    if (pet.feedCount >= STAGE_TARGETS.teen.feed && pet.growthScore >= STAGE_TARGETS.teen.growth) {
+                // 🎯 Adult 阶段：解锁最终形态需要 feedCount >= 30 且 growthScore >= 180
+                else if (oldStage === 'adult') {
+                    if (pet.feedCount >= FINAL_FEED && pet.growthScore >= FINAL_GROWTH) {
+                        pet.finalFormUnlocked = true;
+                        SoundFX.finalForm();
+                        return;
+                    }
+                    // 降级：3 天没喂 + sum < 150
+                    if (sum < 150 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         pet.stage = 'teen';
                         pet.hunger = 0;
                         pet.thirst = 0;
                         pet.feedCount = 0;
                         pet.growthScore = 0;
-                        SoundFX.levelUp();
+                        SoundFX.levelDown();
                         return;
                     }
                 }
@@ -1153,6 +1180,19 @@
                 statusMini.appendChild(tRow);
                 display.appendChild(statusMini);
 
+                // 🔍 调试信息：实时显示 feedCount 和 growthScore
+                if (!activePet.isEgg) {
+                    const debugDiv = document.createElement('div');
+                    debugDiv.className = 'debug-info';
+                    let targetText = '';
+                    if (activePet.stage === 'baby') targetText = `→Teen: ${activePet.feedCount}/${TEEN_FEED} · ${activePet.growthScore}/${TEEN_GROWTH}`;
+                    else if (activePet.stage === 'teen') targetText = `→Adult: ${activePet.feedCount}/${ADULT_FEED} · ${activePet.growthScore}/${ADULT_GROWTH}`;
+                    else if (activePet.stage === 'adult' && !activePet.finalFormUnlocked) targetText = `→Final: ${activePet.feedCount}/${FINAL_FEED} · ${activePet.growthScore}/${FINAL_GROWTH}`;
+                    else if (activePet.finalFormUnlocked) targetText = `👑 已解锁最终形态`;
+                    debugDiv.textContent = targetText;
+                    display.appendChild(debugDiv);
+                }
+
                 card.appendChild(display);
 
                 const actions = document.createElement('div');
@@ -1322,17 +1362,17 @@
                     stageBadge.textContent = getStageLabel(pet.stage, pet.finalFormUnlocked);
                     slot.appendChild(stageBadge);
 
-                    // 显示下一阶段目标
+                    // 🔍 实时显示进度
                     const targetDiv = document.createElement('div');
-                    targetDiv.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center;';
+                    targetDiv.style.cssText = 'font-size:0.65rem; color:#8a6a1a; margin-top:4px; background:#fff5d9; padding:2px 8px; border-radius:10px; text-align:center; font-family:monospace;';
                     if (pet.stage === 'baby') {
-                        targetDiv.textContent = `🎯 Teen: ${pet.feedCount}/${STAGE_TARGETS.teen.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.teen.growth} growth`;
+                        targetDiv.textContent = `→Teen: ${pet.feedCount}/${TEEN_FEED} feeds · ${pet.growthScore}/${TEEN_GROWTH} growth`;
                     } else if (pet.stage === 'teen') {
-                        targetDiv.textContent = `🎯 Adult: ${pet.feedCount}/${STAGE_TARGETS.adult.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.adult.growth} growth`;
+                        targetDiv.textContent = `→Adult: ${pet.feedCount}/${ADULT_FEED} feeds · ${pet.growthScore}/${ADULT_GROWTH} growth`;
                     } else if (pet.stage === 'adult' && !pet.finalFormUnlocked) {
-                        targetDiv.textContent = `👑 Final: ${pet.feedCount}/${STAGE_TARGETS.final.feed} feeds · ${pet.growthScore}/${STAGE_TARGETS.final.growth} growth`;
+                        targetDiv.textContent = `→Final: ${pet.feedCount}/${FINAL_FEED} feeds · ${pet.growthScore}/${FINAL_GROWTH} growth`;
                     } else if (pet.finalFormUnlocked) {
-                        targetDiv.style.cssText = 'font-size:0.65rem; color:#b02a5a; margin-top:4px; background:#ffd0e0; padding:2px 8px; border-radius:10px; text-align:center; font-weight:800;';
+                        targetDiv.style.cssText = 'font-size:0.65rem; color:#b02a5a; margin-top:4px; background:#ffd0e0; padding:2px 8px; border-radius:10px; text-align:center; font-weight:800; font-family:monospace;';
                         targetDiv.textContent = '🔒 Final Form Locked';
                     }
                     slot.appendChild(targetDiv);
