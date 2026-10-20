@@ -544,7 +544,7 @@
         <div class="subhead">
             🐾 25 students · 30 animals · 
             <span class="highlight">Hatch needs 20 pts</span> · 
-            Baby → Teen (feed≥5, sum≥100) · Teen → Adult (feed≥12, sum≥150)
+            Baby → Teen (feed≥5 & sum≥100) · Teen → Adult (feed≥12 & sum≥150)
         </div>
     </div>
 
@@ -649,24 +649,27 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v7';
+            const STORAGE_KEY = 'petGameZoo_v8';
 
-            // 🌟 三天 = 3 * 24 * 60 * 60 * 1000 毫秒
             const DEMOTION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
 
-            // 🌟 阶段门槛（按新规则）
-            // Baby → Teen：喂养 ≥ 5 次 且 sum ≥ 100
-            // Teen → Adult：喂养 ≥ 12 次 且 sum ≥ 150
+            // 🌟 阶段门槛（严格：喂养次数 + 总分都满足）
+            // Baby → Teen：feedCount ≥ 5 且 sum ≥ 100
+            // Teen → Adult：feedCount ≥ 12 且 sum ≥ 150
             // 保持 Adult：sum ≥ 150
-            // 达到 180 分：永久锁定 Adult 不再降级
+            // 达到 180 分：永久锁定 Adult
             const STAGE_TARGETS = {
                 teen:  { feed: 5,  sum: 100 },
                 adult: { feed: 12, sum: 150 },
                 lockAdultSum: 180,
             };
 
+            // 孵化后的初始状态：0（不是满！）
             const EGG_INIT_HUNGER = 0;
             const EGG_INIT_THIRST = 0;
+            // 孵化后同样是 0，必须靠喂养攒
+            const HATCH_INIT_HUNGER = 0;
+            const HATCH_INIT_THIRST = 0;
 
             const FEED_OPTIONS = {
                 water: { score: 1, hunger: 0,  thirst: 15, icon: '💧' },
@@ -674,7 +677,6 @@
                 food:  { score: 2, hunger: 25, thirst: 0,  icon: '🍗' },
             };
 
-            // 🌟 30 种宠物，每个阶段形态明显不同
             const PET_TYPES = [
                 { id: 'dog',      name: 'Dog',      baby: '🐶', teen: '🐕', adult: '🐕‍🦺' },
                 { id: 'cat',      name: 'Cat',      baby: '🐱', teen: '🐈', adult: '🐈‍⬛' },
@@ -720,7 +722,6 @@
             let globalDecayInterval = null;
             let freeMoveInterval = null;
 
-            // 蛋的瞬时表情
             const eggMoods = {};
 
             // ============ 保存/加载 ============
@@ -849,7 +850,6 @@
                 return '👶 Baby';
             }
 
-            // ============ 心情 ============
             function getMood(pet) {
                 if (pet.isEgg) return { emoji: '🥚', label: 'Egg', className: 'okay' };
                 const h = pet.hunger, t = pet.thirst;
@@ -861,7 +861,7 @@
                 return { emoji: '😊', label: 'Happy', className: 'happy' };
             }
 
-            // ============ 🌟 核心：更新阶段 ============
+            // ============ 🌟 核心：更新阶段（严格双条件 + 升级清空进度条） ============
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
 
@@ -873,19 +873,24 @@
                     if (pet.stage !== 'adult' || !pet.adultLocked) {
                         pet.stage = 'adult';
                         pet.adultLocked = true;
+                        // 升级到 Adult 时清空进度条
+                        pet.hunger = 0;
+                        pet.thirst = 0;
                         SoundFX.levelUp();
                     }
                     return;
                 }
 
                 const oldStage = pet.stage;
+                // 严格判断：喂养次数 + 总分 都要满足
                 const canBeAdult = pet.feedCount >= STAGE_TARGETS.adult.feed && sum >= STAGE_TARGETS.adult.sum;
                 const canBeTeen = pet.feedCount >= STAGE_TARGETS.teen.feed && sum >= STAGE_TARGETS.teen.sum;
 
                 let newStage = oldStage;
+                let upgraded = false;
 
                 if (oldStage === 'adult') {
-                    // 只有 3 天没喂食 且 sum < 150 才降级
+                    // Adult 降级：3 天没喂 + sum < 150
                     if (sum < STAGE_TARGETS.adult.sum && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         newStage = canBeTeen ? 'teen' : 'baby';
                         SoundFX.levelDown();
@@ -895,7 +900,7 @@
                 } else if (oldStage === 'teen') {
                     if (canBeAdult) {
                         newStage = 'adult';
-                        SoundFX.levelUp();
+                        upgraded = true;
                     } else if (sum < STAGE_TARGETS.teen.sum && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         newStage = 'baby';
                         SoundFX.levelDown();
@@ -906,10 +911,10 @@
                     // Baby：只能升级
                     if (canBeAdult) {
                         newStage = 'adult';
-                        SoundFX.levelUp();
+                        upgraded = true;
                     } else if (canBeTeen) {
                         newStage = 'teen';
-                        SoundFX.levelUp();
+                        upgraded = true;
                     } else {
                         newStage = 'baby';
                     }
@@ -917,16 +922,26 @@
 
                 if (newStage !== pet.stage) {
                     pet.stage = newStage;
+                    // 🌟 升级时清空进度条
+                    if (upgraded) {
+                        pet.hunger = 0;
+                        pet.thirst = 0;
+                        SoundFX.levelUp();
+                    }
                 }
 
                 // 再次检查 180 分锁定
                 if (sum >= STAGE_TARGETS.lockAdultSum && pet.feedCount >= STAGE_TARGETS.adult.feed) {
                     pet.stage = 'adult';
                     pet.adultLocked = true;
+                    // 锁定 Adult 也清空进度条（如果刚刚升级）
+                    if (oldStage !== 'adult') {
+                        pet.hunger = 0;
+                        pet.thirst = 0;
+                    }
                 }
             }
 
-            // ============ 工具 ============
             function escapeHtml(str) {
                 if (!str) return '';
                 return str.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -1438,7 +1453,9 @@
                 if (pet.petName === '蛋蛋') {
                     pet.petName = PET_NAMES[Math.floor(Math.random() * PET_NAMES.length)];
                 }
-                pet.hunger = 100; pet.thirst = 100;
+                // 🌟 孵化后状态从 0 开始（必须靠喂养攒 sum）
+                pet.hunger = HATCH_INIT_HUNGER;
+                pet.thirst = HATCH_INIT_THIRST;
                 pet.feedCount = 0; pet.stage = 'baby'; pet.petType = null;
                 pet.lastFedTime = Date.now();
                 pet.adultLocked = false;
@@ -1565,7 +1582,6 @@
                 startGlobalDecay();
             }
 
-            // ============ 事件绑定 ============
             document.getElementById('soundToggle').addEventListener('click', () => {
                 soundEnabled = !soundEnabled;
                 updateSoundToggleUI();
@@ -1582,7 +1598,6 @@
                 if (e.key === 'Escape') closeProfile();
             });
 
-            // ============ 启动 ============
             function initApp() {
                 const loaded = loadData();
                 if (!loaded) initStudents();
