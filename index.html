@@ -48,7 +48,6 @@
         .sound-toggle:active { transform: translateY(3px); box-shadow: 0 1px 0 #b48b5a; }
         .sound-toggle.muted { background: #e8e8e8; color: #999; }
 
-        /* 动物园围栏 */
         .zoo-section {
             max-width: 1400px; width: 100%; margin: 0 auto 24px;
             background: linear-gradient(180deg, #d4edc0 0%, #b8d9a0 100%);
@@ -189,7 +188,6 @@
             min-height: 3.6rem;
             display: flex; align-items: center; justify-content: center;
         }
-        /* 三阶段不同尺寸 */
         .pet-emoji-sm.egg { font-size: 3rem; }
         .pet-emoji-sm.stage-baby { font-size: 2.6rem; }
         .pet-emoji-sm.stage-teen { font-size: 3.2rem; }
@@ -546,7 +544,7 @@
         <div class="subhead">
             🐾 25 students · 30 animals · 
             <span class="highlight">Hatch needs 20 pts</span> · 
-            Click <b>📂 Profile</b> to manage 3 pets
+            Baby → Teen (feed≥5, sum≥100) · Teen → Adult (feed≥12, sum≥150)
         </div>
     </div>
 
@@ -651,19 +649,20 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v6';
+            const STORAGE_KEY = 'petGameZoo_v7';
 
             // 🌟 三天 = 3 * 24 * 60 * 60 * 1000 毫秒
             const DEMOTION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
 
-            // 🌟 阶段门槛（按你的新规则）
-            // Baby → Teen：喂养 ≥ 5 次 且 sum ≥ 60
+            // 🌟 阶段门槛（按新规则）
+            // Baby → Teen：喂养 ≥ 5 次 且 sum ≥ 100
             // Teen → Adult：喂养 ≥ 12 次 且 sum ≥ 150
-            // Adult 保持：sum ≥ 150（但一旦 sum ≥ 180 就锁定 Adult 永不降级）
+            // 保持 Adult：sum ≥ 150
+            // 达到 180 分：永久锁定 Adult 不再降级
             const STAGE_TARGETS = {
-                teen:  { feed: 5,  sum: 60  },
+                teen:  { feed: 5,  sum: 100 },
                 adult: { feed: 12, sum: 150 },
-                lockAdultSum: 180,   // 达到 180 就永久 Adult
+                lockAdultSum: 180,
             };
 
             const EGG_INIT_HUNGER = 0;
@@ -675,10 +674,7 @@
                 food:  { score: 2, hunger: 25, thirst: 0,  icon: '🍗' },
             };
 
-            // 🌟 30 种宠物，每个阶段形态明显不同：
-            //    Baby  → 可爱卡通，体型小
-            //    Teen  → 半写实，体型中
-            //    Adult → 更逼真，体型大
+            // 🌟 30 种宠物，每个阶段形态明显不同
             const PET_TYPES = [
                 { id: 'dog',      name: 'Dog',      baby: '🐶', teen: '🐕', adult: '🐕‍🦺' },
                 { id: 'cat',      name: 'Cat',      baby: '🐱', teen: '🐈', adult: '🐈‍⬛' },
@@ -865,49 +861,38 @@
                 return { emoji: '😊', label: 'Happy', className: 'happy' };
             }
 
-            // ============ 🌟 核心：更新阶段（带 3 天降级 + 180 永久锁 Adult） ============
+            // ============ 🌟 核心：更新阶段 ============
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
 
                 const now = Date.now();
                 const sum = pet.hunger + pet.thirst;
 
-                // 记录最后一次"喂养加分"时间（外部在 handleFeed/handleWater 里更新）
-                // 如果从没喂过，用孵化时间作为基准（这里简化用当前时间）
-
-                // 🎯 先判断是否达到 Adult 的 180 分锁定
+                // 🎯 永久锁定 Adult：sum ≥ 180 且喂养次数 ≥ 12
                 if (sum >= STAGE_TARGETS.lockAdultSum && pet.feedCount >= STAGE_TARGETS.adult.feed) {
-                    if (!pet.adultLocked || pet.stage !== 'adult') {
+                    if (pet.stage !== 'adult' || !pet.adultLocked) {
                         pet.stage = 'adult';
                         pet.adultLocked = true;
                         SoundFX.levelUp();
-                        return;
                     }
-                    // 已锁定，保持 Adult
                     return;
                 }
 
-                // 🎯 未锁定 Adult 的正常判断
                 const oldStage = pet.stage;
-
-                // 检查是否满足升级条件
                 const canBeAdult = pet.feedCount >= STAGE_TARGETS.adult.feed && sum >= STAGE_TARGETS.adult.sum;
                 const canBeTeen = pet.feedCount >= STAGE_TARGETS.teen.feed && sum >= STAGE_TARGETS.teen.sum;
 
                 let newStage = oldStage;
 
-                // 如果已经 Adult 且没锁，检查是否要降级
                 if (oldStage === 'adult') {
                     // 只有 3 天没喂食 且 sum < 150 才降级
                     if (sum < STAGE_TARGETS.adult.sum && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         newStage = canBeTeen ? 'teen' : 'baby';
                         SoundFX.levelDown();
                     } else {
-                        // 保持 Adult
                         newStage = 'adult';
                     }
                 } else if (oldStage === 'teen') {
-                    // Teen：检查升级到 Adult 或降级到 Baby
                     if (canBeAdult) {
                         newStage = 'adult';
                         SoundFX.levelUp();
@@ -930,12 +915,11 @@
                     }
                 }
 
-                // 应用新阶段
                 if (newStage !== pet.stage) {
                     pet.stage = newStage;
                 }
 
-                // 一旦达到 180 分且喂养次数足够，永久锁 Adult
+                // 再次检查 180 分锁定
                 if (sum >= STAGE_TARGETS.lockAdultSum && pet.feedCount >= STAGE_TARGETS.adult.feed) {
                     pet.stage = 'adult';
                     pet.adultLocked = true;
@@ -1474,7 +1458,7 @@
                 if (opt.thirst > 0) pet.thirst = Math.min(100, pet.thirst + opt.thirst);
                 if (!pet.isEgg) {
                     pet.feedCount += 1;
-                    pet.lastFedTime = Date.now();   // 更新最后喂养时间
+                    pet.lastFedTime = Date.now();
                     updateStage(pet);
                 }
                 if (type === 'fruit') SoundFX.fruit();
