@@ -590,7 +590,7 @@
         <div class="subhead">
             🐾 25 students · 30 animals · 
             <span class="highlight">Hatch 20 pts</span> · 
-            Baby→Teen (5 feeds & 5 growth) · Teen→Adult (12 & 12) · Adult→Final (30 & 30)
+            Baby→Teen (5 feeds & 100 growth) · Teen→Adult (12 & 150) · Adult→Final (30 & 180)
         </div>
     </div>
 
@@ -696,15 +696,15 @@
             const SCORE_HATCH_COST = 20;
             const DECAY_INTERVAL_MS = 30000;
             const MAX_SCORE = 999;
-            const STORAGE_KEY = 'petGameZoo_v11';
+            const STORAGE_KEY = 'petGameZoo_v12';
 
             const DEMOTION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
 
-            // 阶段门槛（feedCount 和 growthScore 分别判断）
+            // 🌟 核心修复：growth 门槛必须够 100/150/180，不能只靠喂养次数
             const STAGE_TARGETS = {
-                teen:  { feed: 5,  growth: 5  },
-                adult: { feed: 12, growth: 12 },
-                final: { feed: 30, growth: 30 },
+                teen:  { feed: 5,  growth: 100 },   // ✅ 5次喂养 + 100成长分
+                adult: { feed: 12, growth: 150 },   // ✅ 12次喂养 + 150成长分
+                final: { feed: 30, growth: 180 },   // ✅ 30次喂养 + 180成长分
             };
 
             const EGG_INIT_HUNGER = 0;
@@ -712,7 +712,6 @@
             const HATCH_INIT_HUNGER = 0;
             const HATCH_INIT_THIRST = 0;
 
-            // 🌟 喂养选项：进度条与分数单位一致
             const FEED_OPTIONS = {
                 water: { score: 1, hunger: 0, thirst: 1, icon: '💧', growth: 1, feed: 1 },
                 fruit: { score: 1, hunger: 1, thirst: 1, icon: '🍎', growth: 1, feed: 1 },
@@ -911,21 +910,16 @@
             }
 
             // ============ 🌟 核心：updateStage ============
-            // 规则：
-            // 1. 喂养：feedCount+1，growthScore 按类型加（水果/水+1，鸡腿+2）
-            // 2. 扣分：score-1/-2，growthScore-1/-2，feedCount 不变
-            // 3. 升级条件：feedCount 和 growthScore 分别达标
-            // 4. 升级后：hunger/thirst/feedCount/growthScore 全清零
-            // 5. 扣分后：如果条件不满足，保持当前阶段，不升不降
-            // 6. 降级：只有 3 天没喂 + 状态不达标才降级
-            // 7. finalFormUnlocked=true 后永不降级
+            // Baby → Teen：feedCount >= 5 且 growthScore >= 100
+            // Teen → Adult：feedCount >= 12 且 growthScore >= 150
+            // Adult → Final：feedCount >= 30 且 growthScore >= 180
             function updateStage(pet) {
                 if (pet.isEgg || !pet.petType) return;
 
                 const now = Date.now();
                 const sum = pet.hunger + pet.thirst;
 
-                // 🎯 最终形态已解锁，永久保持 Adult，不降级
+                // 最终形态已解锁，永久保持 Adult
                 if (pet.finalFormUnlocked) {
                     pet.stage = 'adult';
                     return;
@@ -933,14 +927,13 @@
 
                 const oldStage = pet.stage;
 
-                // 🎯 Adult 阶段：检查是否解锁最终形态
+                // 🎯 Adult 阶段
                 if (oldStage === 'adult') {
                     if (pet.feedCount >= STAGE_TARGETS.final.feed && pet.growthScore >= STAGE_TARGETS.final.growth) {
                         pet.finalFormUnlocked = true;
                         SoundFX.finalForm();
                         return;
                     }
-                    // 降级：3 天没喂 + sum < 150
                     if (sum < 150 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         pet.stage = 'teen';
                         pet.hunger = 0;
@@ -964,7 +957,6 @@
                         SoundFX.levelUp();
                         return;
                     }
-                    // 降级：3 天没喂 + sum < 100
                     if (sum < 100 && (now - pet.lastFedTime) >= DEMOTION_TIMEOUT_MS) {
                         pet.stage = 'baby';
                         pet.hunger = 0;
@@ -1590,7 +1582,6 @@
                 if (student.score < 1) { SoundFX.error(); return; }
                 student.score -= 1;
                 pet.thirst = Math.max(0, pet.thirst - 1);
-                // 🌟 扣分也扣 growthScore，但不扣 feedCount
                 if (!pet.isEgg) {
                     pet.growthScore = Math.max(0, pet.growthScore - 1);
                 }
